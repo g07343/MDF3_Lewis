@@ -1,7 +1,22 @@
-package com.matthewlewis.photomail;
+/*
+ * Author Matthew Lewis
+ * 
+ * Project PhotoSet
+ * 
+ * Package com.matthewlewis.photoset
+ * 
+ * File MainActivity.java
+ * 
+ * Purpose MainActivity is the main interface for the entire app.  It displays an images the user has opted to "share" to the activity, and allows
+ * them to select a "decorate" tab, which will load a subsequent activity to add image overlays.
+ * 
+ */
+package com.matthewlewis.photoset;
 
 
 import java.util.ArrayList;
+
+import com.matthewlewis.photomail.R;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -48,16 +63,13 @@ public class MainActivity extends Activity {
     	DisplayMetrics metrics = this.getResources().getDisplayMetrics();
     	
     	screenHeight = metrics.heightPixels;
+    	System.out.println("Screen height is:  " + screenHeight);
     	
-    	
-    	
+    	//if we have a valid "type" contained within intent and its starts with "image/"...
     	if (receivedType != null && receivedType.startsWith("image/")) {
     		if (receivedAction.equals("android.intent.action.SEND")) {
     			
-        		
-        		
-        		
-        		
+        			
         		
         		Uri receivedUri = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
         		
@@ -72,29 +84,42 @@ public class MainActivity extends Activity {
         		
         		
         		
-        		
+        		//check if the user instead opted to "share" more than one image
     		} else if (receivedAction.equals("android.intent.action.SEND_MULTIPLE")) {
     			System.out.println("Multiple images sent!");
+    			//get the contained bundle so we can figure out what "key" was used to store any parcelables
     			Bundle extras = intent.getExtras();
+    			
+    			//set our default image to "GONE" so that it isn't occupying the screen anymore
     			imageHolder.setVisibility(View.GONE);
     			System.out.println("Keys in intent were:  " + extras.keySet().size());
     			
+    			//for each key contained, attempt to get an arraylist of parcelables, which will hold image Uris 
     			for (String key : extras.keySet()) {
     				System.out.println("Key was:  " + key);
-    				ArrayList<Parcelable> array = (ArrayList<Parcelable>) intent.getParcelableArrayListExtra(key);
-    				System.out.println("Object within the key was:  " + array);
     				
-    				for (int i =0; i < array.size(); i++) {
-    					ImageView receivedHolder = new ImageView(this);
-    					Uri receivedUri = (Uri) array.get(i);
-    					System.out.println("Looping through...Uri is:  " + receivedUri);
-    					receivedHolder.setImageURI(receivedUri);
-    					receivedHolder.setLayoutParams(imageParams);
-    					receivedHolder.setScaleType(ImageView.ScaleType.FIT_XY);
-    					int maxHeight = screenHeight/array.size();
-    					receivedHolder.getLayoutParams().height = maxHeight;
-    					activityLayout.addView(receivedHolder);
-    				}
+    				//create and assign our arraylist using our created key 
+    				ArrayList<Parcelable> array = (ArrayList<Parcelable>) intent.getParcelableArrayListExtra(key);
+    				
+    				//check to make sure we have a valid arrayList
+    				if (array != null) {
+    					System.out.println("Object within the key was:  " + array);
+        				
+    					//for the length of the array, create a new imageView and assign the image from the uri
+        				for (int i =0; i < array.size(); i++) {
+        					ImageView receivedHolder = new ImageView(this);
+        					Uri receivedUri = (Uri) array.get(i);
+        					
+        					receivedHolder.setImageURI(receivedUri);
+        					receivedHolder.setLayoutParams(imageParams);
+        					receivedHolder.setScaleType(ImageView.ScaleType.FIT_XY);
+        					
+        					//use our screen's pixel height to dynamically divide the height of the images passed to us (even height)
+        					int maxHeight = screenHeight/array.size();
+        					receivedHolder.getLayoutParams().height = maxHeight;
+        					activityLayout.addView(receivedHolder);
+        				}
+    				}				
     				activityLayout.requestLayout();
     			}
     		}
@@ -102,7 +127,7 @@ public class MainActivity extends Activity {
     	}
         
         
-        
+        //may not need the below code, depending on which route I end up going with this project...
         //create a string array to hold columns of images so we can go through them one by one
         final String[] columns = { MediaStore.Images.Media.DATA, MediaStore.Images.Media._ID };
         final String orderBy = MediaStore.Images.Media._ID;
@@ -116,6 +141,7 @@ public class MainActivity extends Activity {
         //Create an array to store path to all the images
         String[] arrPath = new String[count];
 
+        //use for loop to increment through each image, capturing the path to it
         for (int i = 0; i < count; i++) {
             cursor.moveToPosition(i);
             int dataColumnIndex = cursor.getColumnIndex(MediaStore.Images.Media.DATA);
@@ -123,6 +149,7 @@ public class MainActivity extends Activity {
             arrPath[i]= cursor.getString(dataColumnIndex);
             //Log.i("PATH", arrPath[i]);
         }  
+        //close out our cursor object
         cursor.close();
     }
 
