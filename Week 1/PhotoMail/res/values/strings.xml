@@ -4,5 +4,6 @@
     <string name="app_name">PhotoMail</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
-
+	<string name="image_holder_desc">Image Holder</string>
+	<string name="app_title"></string>
 </resources>
