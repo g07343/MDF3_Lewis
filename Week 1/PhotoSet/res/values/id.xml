@@ -7,4 +7,5 @@
     <item type="id" name="decorate_HelperText" />
     <item type="id" name="decorate_drawerHolder" />
     <item type="id" name="decorate_setBtn" />
+    <item type="id" name="decorate_drawerHelper" />
 </resources>

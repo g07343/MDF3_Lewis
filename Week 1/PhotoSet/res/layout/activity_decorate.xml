@@ -132,10 +132,27 @@
 	<LinearLayout
 	    android:id="@id/decorate_drawerHolder"
 	    android:layout_width="match_parent"
-	    android:layout_height="60dp"
+	    android:layout_height="200dp"
 	    android:background="#80FFFFFF"
 	    android:layout_alignParentBottom="true"
 	    android:orientation="vertical" >
+	    
+	    <TextView
+        android:id="@id/decorate_drawerHelper"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        
+        android:layout_gravity="center"
+        android:text="@string/decorate_drawerHelper"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textStyle="bold" />
+	    
+	    <ScrollView
+	        android:layout_width="match_parent"
+	        android:layout_height="match_parent">
+	        
+	    </ScrollView>
 	</LinearLayout>
 
 </RelativeLayout>

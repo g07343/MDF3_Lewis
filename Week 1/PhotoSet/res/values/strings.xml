@@ -9,6 +9,7 @@
 	<string name="app_title"></string>
 	<string name="app_logo_desc">PhotoSet Logo</string>
 	<string name="addItem_desc">Add Tile</string>
-	<string name="decorate_helperLabel">Tap a tile to add icons, or tap "Set" to set as wallpaper</string>
-	<string name="decorate_setBtn">Set</string>
+	<string name="decorate_helperLabel">Tap a tile to add icons, or tap \"Set\" to set as wallpaper</string>
+	<string name="decorate_setBtn">Set!</string>
+	<string name="decorate_drawerHelper">Add something fun!</string>
 </resources>
