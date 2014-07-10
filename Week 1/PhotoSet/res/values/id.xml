@@ -10,4 +10,5 @@
     <item type="id" name="decorate_drawerHelper" />
     <item type="id" name="decorate_stickerHolder" />
     <item type="id" name="decorate_rootView" />
+    <item type="id" name="mainActivity_rootView" />
 </resources>

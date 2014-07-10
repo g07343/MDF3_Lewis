@@ -13,27 +13,25 @@
  */
 package com.matthewlewis.photoset;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+
 import java.io.IOException;
-import java.io.OutputStream;
-
 import com.matthewlewis.photomail.R;
-
 import android.app.Activity;
 import android.app.WallpaperManager;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.os.Environment;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 
 public class DecorateActivity extends Activity{
 	
@@ -42,11 +40,23 @@ public class DecorateActivity extends Activity{
 	Integer currentSelected;
 	int[] imageIdArray;
 	String savedPath;
+	RelativeLayout rootView;
+	int[] idArray;
+	Boolean wallpaperSet;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
+		System.out.println("ONCREATE FUNCTION RUNS IN DECORATEACTIVITY");
+		
+		//set up our boolean, which will be returned to MainAcitivity to communicate if the user set the wallpaper
+		wallpaperSet = false;
+		
+		//grab the root content holder of the activity
+		rootView = (RelativeLayout) findViewById(R.id.decorate_rootView);
+		
+		//rootView.setBackground(converted);
 		
 		//set our view to the xml layout
 		setContentView(R.layout.activity_decorate);
@@ -85,7 +95,7 @@ public class DecorateActivity extends Activity{
 		
 		//create an array of ids for our various "addIcons" so we can keep this (mostly) dynamic.  
 		//Don't want to keep track of 9 different image views..
-		final int[] idArray = new int[9];
+		idArray = new int[9];
 		
 		for (int i = 1; i < 10; i++) {
 			String buttonLabel = "imageView" + i;
@@ -122,6 +132,10 @@ public class DecorateActivity extends Activity{
 	public void finish() {
 		// TODO Auto-generated method stub
 		Intent result = new Intent();
+		
+		//return our boolean so MainActivity knows if it needs to update it's own background
+		result.putExtra("wasUpdated", wallpaperSet);
+		
 		setResult(Activity.RESULT_OK, result);
 		super.finish();
 	}
@@ -208,43 +222,98 @@ public class DecorateActivity extends Activity{
 	//this method is run when the user taps the "Set!" button, and dynamically removes parts of the interface
 	//that the user didn't modify in order to take a screenshot, and subsequently set it as the device wallpaper.
 	private void setWallpaper() {
-		//grab a path to where we want to store the image we're creating
-		String savedPath = Environment.getExternalStorageDirectory().toString() + "/" + "PhotoSetBackground";
+		//remove the "helper" label at the top so we don't save it as part of the screenshot
+		TextView helperText = (TextView) findViewById(R.id.decorate_HelperText);
+		helperText.setVisibility(View.GONE);
 		
+		//hide our button so we don't save it in the screenshot
+		finishBtn.setVisibility(View.GONE);
+		
+		//check and remove any "unused" add icons on the screen so they aren't included in the image
+		for (int i = 0; i < idArray.length; i++) {
+			//create a reuseable imageView that we can then check the image it contains
+			ImageView imageHolder = (ImageView) findViewById(idArray[i]);
+			Drawable current = imageHolder.getDrawable();
+			Drawable defaultImage = getResources().getDrawable(R.drawable.add_tile);
+			if (current.getConstantState().equals(defaultImage.getConstantState())) {
+				imageHolder.setVisibility(View.GONE);
+			}
+		}
+		
+		//set up bitmap object to hold original background that was shared
 		Bitmap bitmap;
-		RelativeLayout rootView = (RelativeLayout) findViewById(R.id.decorate_rootView);
-		View root = rootView.getRootView();
+		
+		//grab our first activity's background
+		LinearLayout priorRoot = MainActivity.activityLayout;
+		
+		//make sure we're getting the root view
+		View root = priorRoot.getRootView();
+		
+		//open up the drawing cache so we can use it
 		root.setDrawingCacheEnabled(true);
+		
+		//create a bitmap object from the drawing cache
 		bitmap = Bitmap.createBitmap(root.getDrawingCache());
+		
+		//close the drawing cache now that we're done
 		root.setDrawingCacheEnabled(false);
 		
-		FileOutputStream os = null;
-		File imageFile = new File(savedPath);
 		
-		try {
-			os = new FileOutputStream(imageFile);
-			bitmap.compress(Bitmap.CompressFormat.JPEG, 90, os);
-			try {
-				os.flush();
-				os.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		} catch (FileNotFoundException e) {
-			
-		}
+		//grab this activity's background 
+		Bitmap thisScreen;
+		
+		//grab our root view of this activity
+		RelativeLayout thisView = (RelativeLayout) findViewById(R.id.decorate_rootView);
+		
+		//enable the drawing cache
+		thisView.setDrawingCacheEnabled(true);
+		
+		//create a new bitmap of this activity from the cache
+		thisScreen = Bitmap.createBitmap(thisView.getDrawingCache());
+		
+		//close the cache
+		thisView.setDrawingCacheEnabled(false);
+		
+		//now combine the two, overlaying decorate activity's bitmap over the other to create our wallpaper
+		Bitmap overlay = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), bitmap.getConfig());
+		Canvas canvas = new Canvas(overlay);
+		canvas.drawBitmap(bitmap, new Matrix(), null);
+		canvas.drawBitmap(thisScreen, 0, 0, null);
 		
 		//now set the saved image as the device's wallpaper
 		WallpaperManager wallpaperManager = WallpaperManager.getInstance(this.getApplicationContext());
-		System.out.println("Desired min width is:  " + wallpaperManager.getDesiredMinimumWidth());
-		System.out.println("Desired min height is:  " + wallpaperManager.getDesiredMinimumHeight());
+		
+		//determine what size the device wants the wallpaper to be.
+		//this is where things get weird - on devices with "wallpaper scrolling" turned on,
+		//this will not report the correct values, and results in a stretched image.
+		int width = wallpaperManager.getDesiredMinimumWidth();
+		int height = wallpaperManager.getDesiredMinimumHeight();
+		
 		try {
-			wallpaperManager.setBitmap(bitmap);
+			//attempt to set the wallpaper using our wallpaperManager
+			wallpaperManager.setBitmap(Bitmap.createScaledBitmap(overlay, width, height, false));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		//restore visibility to interface
+		helperText.setVisibility(View.VISIBLE);
+		finishBtn.setVisibility(View.VISIBLE);
+		
+		//alert the user the wallpaper was set successfully
+		Toast.makeText(getApplicationContext(), "Wallpaper set.  If wallpaper scrolling is enabled, stretching may appear.",
+				   Toast.LENGTH_LONG).show();
+		
+		//return all "add" views to visible in case the user decides to further edit
+		for (int i = 0; i < idArray.length; i++) {
+			//create a reuseable imageView that we can then check the image it contains
+			ImageView imageHolder = (ImageView) findViewById(idArray[i]);
+			imageHolder.setVisibility(View.VISIBLE);
+		}
+		
+		//set our boolean to true so MainActivity knows we updated our wallpaper
+		wallpaperSet = true;
 	}
 	
 }

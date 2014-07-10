@@ -14,28 +14,23 @@
  */
 package com.matthewlewis.photoset;
 
-
 import java.util.ArrayList;
-
 import com.matthewlewis.photomail.R;
-
 import android.app.Activity;
-import android.app.Fragment;
+import android.app.WallpaperManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.database.Cursor;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
-
 import android.util.DisplayMetrics;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
@@ -44,16 +39,17 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import android.provider.MediaStore;
 
 public class MainActivity extends Activity {
 
-	LinearLayout activityLayout;
+	public static LinearLayout activityLayout;
 	LayoutParams imageParams;
 	int screenHeight;
 	Button decorateBtn;
 	ImageView logo;
 	Context context;
+	int[] idArray;
+	ImageView imageHolder;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,7 +71,7 @@ public class MainActivity extends Activity {
         logo = (ImageView) findViewById(R.id.logo);
         
         //grab a reference to our default imageView
-        ImageView imageHolder = (ImageView) findViewById(R.id.image_holder);
+        imageHolder = (ImageView) findViewById(R.id.image_holder);
         
         //grab a reference to our decorate button
         decorateBtn = (Button) findViewById(R.id.decorate_btn);
@@ -113,6 +109,7 @@ public class MainActivity extends Activity {
 				
 				//load in our transparent "decorate" activity
 				Intent decorateIntent = new Intent(context, com.matthewlewis.photoset.DecorateActivity.class);
+				
 				startActivityForResult(decorateIntent, 0);
 			}
     		
@@ -152,14 +149,26 @@ public class MainActivity extends Activity {
         				
     					int maxHeight;
     					
+    					//use our screen's pixel height to dynamically divide the height of the images passed to us (even height)
+    					//depending on if there are more than 3 images passed, apply a certain height
+    					if (array.size() > 3) {
+    						maxHeight = screenHeight/3;
+    						idArray = new int[3];
+    					} else {
+    						maxHeight = screenHeight/array.size();
+    						idArray = new int[array.size()];
+    					}
+    					
     					//if more than 3 images were passed, alert user that only 3 will be used (avoid memory problems)
     					if (array.size() > 3) {
     						Toast.makeText(getApplicationContext(), "Unfortunately, PhotoSet only supports up to 3 images at once.  Using the first three.",
     								   Toast.LENGTH_LONG).show();
     					}  					
     					
+    					
+    					
     					//for the length of the array, create a new imageView and assign the image from the uri
-        				for (int i =0; i < array.size(); i++) {
+        				for (int i = 0; i < array.size(); i++) {
         					ImageView receivedHolder = new ImageView(this);
         					Uri receivedUri = (Uri) array.get(i);
         					
@@ -167,13 +176,15 @@ public class MainActivity extends Activity {
         					receivedHolder.setLayoutParams(imageParams);
         					receivedHolder.setScaleType(ImageView.ScaleType.FIT_XY);
         					
-        					//use our screen's pixel height to dynamically divide the height of the images passed to us (even height)
-        					//depending on if there are more than 3 images passed, apply a certain height
-        					if (array.size() > 3) {
-        						maxHeight = screenHeight/3;
-        					} else {
-        						maxHeight = screenHeight/array.size();
-        					}
+        					
+        					//manually set id for dynamic view to store it
+        					int incrementer = i+1;
+        					int newId = 837498576 / incrementer;
+        					receivedHolder.setId(newId);
+        					
+        					//grab the id of each dynamic view so we can save it 
+        					int id = receivedHolder.getId();
+        					idArray[i] = id;
         					
         					receivedHolder.getLayoutParams().height = maxHeight;
         					System.out.println("Height assigned was:  " + maxHeight);
@@ -190,35 +201,15 @@ public class MainActivity extends Activity {
     		}
     		
     	} else {
-    		//intent was the default, meaning the activity was launched manually by user
+    		//manually set background color, because for some reason, the layout isn't doing it
+    		View rootView = activityLayout.getRootView();
+    		rootView.setBackgroundColor(Color.BLACK);
     		
+    		//intent was the default, meaning the activity was launched manually by user
+    		Drawable defaultBg = getResources().getDrawable(R.drawable.noneselected);
+    		activityLayout.setBackground(defaultBg);
+    		decorateBtn.setVisibility(View.GONE);
     	}
-        
-        
-        //may not need the below code, depending on which route I end up going with this project...
-        //create a string array to hold columns of images so we can go through them one by one
-        final String[] columns = { MediaStore.Images.Media.DATA, MediaStore.Images.Media._ID };
-        final String orderBy = MediaStore.Images.Media._ID;
-        //Stores all the images from the gallery in Cursor
-        Cursor cursor = getContentResolver().query(
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, null,
-                null, orderBy);
-        //Total number of images
-        int count = cursor.getCount();
-
-        //Create an array to store path to all the images
-        String[] arrPath = new String[count];
-
-        //use for loop to increment through each image, capturing the path to it
-        for (int i = 0; i < count; i++) {
-            cursor.moveToPosition(i);
-            int dataColumnIndex = cursor.getColumnIndex(MediaStore.Images.Media.DATA);
-            //Store the path of the image
-            arrPath[i]= cursor.getString(dataColumnIndex);
-            //Log.i("PATH", arrPath[i]);
-        }  
-        //close out our cursor object
-        cursor.close();
     }
 
 	@Override
@@ -249,6 +240,32 @@ public class MainActivity extends Activity {
 		super.onActivityResult(requestCode, resultCode, data);
 		logo.setVisibility(View.VISIBLE);
 		decorateBtn.setVisibility(View.VISIBLE);
-		System.out.println("Activity ended!!!");
+		
+		//grab the returned boolean so we know if the user updated their wallpaper
+		Boolean didUpdate = data.getBooleanExtra("wasUpdated", false);
+		
+		if (didUpdate) {
+			//if the user DID update their wallpaper, let's grab it and set it here to match
+			WallpaperManager wallpaperManager = WallpaperManager.getInstance(this.getApplicationContext());
+			Drawable currentWallpaper = wallpaperManager.getFastDrawable();
+			
+			if (idArray != null) {
+				//make sure to get rid of the old images that were being displayed
+				//this is needed when the user imported multiple images instead of one
+				for (int i = 0; i < idArray.length; i++) {
+					
+					int id = idArray[i];
+					ImageView oldImage = (ImageView) findViewById(id);
+					activityLayout.removeView(oldImage);
+				}
+			} else {
+				//idArray was never used since the user only shared one image
+				imageHolder.setVisibility(View.GONE);
+			}			
+			
+			//set new background
+			
+			activityLayout.setBackground(currentWallpaper);
+		}
 	}   
 }
