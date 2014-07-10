@@ -45,6 +45,11 @@
                 <data android:mimeType="image/*" />
             </intent-filter>
         </activity>
+        <activity
+            android:name="com.matthewlewis.photoset.DecorateActivity"
+            android:label="@string/decorateActivity_name" 
+            android:theme="@style/Theme.Transparent" >
+        </activity>
     </application>
 
 </manifest>

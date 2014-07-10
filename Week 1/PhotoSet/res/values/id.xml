@@ -4,4 +4,7 @@
     <item type="id" name="activity_holder" />
     <item type="id" name="decorate_btn" />
     <item type="id" name="logo" />
+    <item type="id" name="decorate_HelperText" />
+    <item type="id" name="decorate_drawerHolder" />
+    <item type="id" name="decorate_setBtn" />
 </resources>

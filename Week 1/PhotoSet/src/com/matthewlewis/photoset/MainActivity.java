@@ -21,6 +21,7 @@ import com.matthewlewis.photomail.R;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
@@ -52,6 +53,7 @@ public class MainActivity extends Activity {
 	int screenHeight;
 	Button decorateBtn;
 	ImageView logo;
+	Context context;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +62,9 @@ public class MainActivity extends Activity {
       //get rid of that pesky title bar and set to fullscreen
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        
+        //grab a reference to our application context
+        context = this.getApplicationContext();
         
         //lock our orientation to portrait, which keeps our images from stretching and keeps the size correct for a background image
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -105,6 +110,10 @@ public class MainActivity extends Activity {
 				//get rid of this activity's interface, since we will potentially be taking a screenshot within the next activity
 				logo.setVisibility(View.GONE);
 				decorateBtn.setVisibility(View.GONE);
+				
+				//load in our transparent "decorate" activity
+				Intent decorateIntent = new Intent(context, com.matthewlewis.photoset.DecorateActivity.class);
+				startActivityForResult(decorateIntent, 0);
 			}
     		
     	});
@@ -231,20 +240,15 @@ public class MainActivity extends Activity {
         }
         return super.onOptionsItemSelected(item);
     }
-
-    /**
-     * A placeholder fragment containing a simple view.
-     */
-    public static class PlaceholderFragment extends Fragment {
-
-        public PlaceholderFragment() {
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            return rootView;
-        }
-    }
+    
+    
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		// TODO Auto-generated method stub
+		
+		super.onActivityResult(requestCode, resultCode, data);
+		logo.setVisibility(View.VISIBLE);
+		decorateBtn.setVisibility(View.VISIBLE);
+		System.out.println("Activity ended!!!");
+	}   
 }

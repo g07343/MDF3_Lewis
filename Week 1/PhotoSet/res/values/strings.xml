@@ -2,9 +2,13 @@
 <resources>
 
     <string name="app_name">PhotoMail</string>
+    <string name="decorateActivity_name">Decorate</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
 	<string name="image_holder_desc">Image Holder</string>
 	<string name="app_title"></string>
 	<string name="app_logo_desc">PhotoSet Logo</string>
+	<string name="addItem_desc">Add Tile</string>
+	<string name="decorate_helperLabel">Tap a tile to add icons, or tap "Set" to set as wallpaper</string>
+	<string name="decorate_setBtn">Set</string>
 </resources>
