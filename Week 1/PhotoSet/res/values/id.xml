@@ -8,4 +8,5 @@
     <item type="id" name="decorate_drawerHolder" />
     <item type="id" name="decorate_setBtn" />
     <item type="id" name="decorate_drawerHelper" />
+    <item type="id" name="decorate_stickerHolder" />
 </resources>

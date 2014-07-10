@@ -13,14 +13,12 @@
  */
 package com.matthewlewis.photoset;
 
-import java.util.ArrayList;
-
 import com.matthewlewis.photomail.R;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -32,6 +30,7 @@ public class DecorateActivity extends Activity{
 	LinearLayout iconDrawer;
 	Button finishBtn;
 	Integer currentSelected;
+	int[] imageIdArray;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +39,9 @@ public class DecorateActivity extends Activity{
 		
 		//set our view to the xml layout
 		setContentView(R.layout.activity_decorate);
+		
+		//set up our drawer so the user has things to choose from
+		populateDrawer();
 		
 		//grab references to our views that we may need
 		finishBtn = (Button) findViewById(R.id.decorate_setBtn);
@@ -125,4 +127,65 @@ public class DecorateActivity extends Activity{
 		
 	}
 
+	//this method runs when the activity loads, and is responsible for dynamically creating items within the drawer
+	private void populateDrawer() {
+		LinearLayout stickerHolder = (LinearLayout) findViewById(R.id.decorate_stickerHolder);
+		
+		//create an array to hold the drawable ids
+		imageIdArray = new int[6];
+		
+		int rowCounter = 0;
+		
+		//for now, hardcode the number of items so we can keep things dynamic (currently we have 6 items)
+		for (int i = 1; i < 7; i++) {
+			
+			//dynamic string to reference our specific drawable
+			String stickerName = "sticker" + i;
+			
+			System.out.println("Sticker being search is:  " + stickerName);
+			
+			//like in the onCreate method, we need a seperate counter to keep our data in sync with array
+			int arraySync = i-1;
+			
+			if (rowCounter == 2) {
+				//reset our row counter so we only have 3 items per row
+				rowCounter = 0;
+			}
+			
+			//get the actual integer id of each image to store in array
+			final int resID = getResources().getIdentifier(stickerName, "drawable", DecorateActivity.this.getPackageName());
+			
+			//add the id to our array for when we dynamically assign onClickListeners
+			imageIdArray[arraySync] = resID;
+			
+			//create a reuseable imageView each time to hold each object
+			ImageView stickerItem = new ImageView(this);
+			
+			//get our image
+			Drawable stickerImage = getResources().getDrawable(resID);
+			
+			stickerItem.setImageDrawable(stickerImage);
+			
+			stickerHolder.addView(stickerItem);
+			
+			//increment our row counter to maintain correct number of items per row
+			rowCounter ++;
+			
+			//dynamically add onClickListeners to each
+			stickerItem.setOnClickListener(new OnClickListener() {
+
+				@Override
+				public void onClick(View arg0) {
+					// user selected an item, so close the drawer
+					hideDrawer();
+					
+					Drawable selected = getResources().getDrawable(resID);
+					ImageView selectedTile = (ImageView) findViewById(currentSelected);
+					selectedTile.setImageDrawable(selected);
+				}
+				
+			});
+		}
+	}
+	
 }
