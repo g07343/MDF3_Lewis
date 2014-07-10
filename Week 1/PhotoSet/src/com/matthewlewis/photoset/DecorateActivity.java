@@ -13,17 +13,27 @@
  */
 package com.matthewlewis.photoset;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+
 import com.matthewlewis.photomail.R;
 
 import android.app.Activity;
+import android.app.WallpaperManager;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 public class DecorateActivity extends Activity{
 	
@@ -31,6 +41,7 @@ public class DecorateActivity extends Activity{
 	Button finishBtn;
 	Integer currentSelected;
 	int[] imageIdArray;
+	String savedPath;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +68,17 @@ public class DecorateActivity extends Activity{
 			public void onClick(View v) {
 				//do nothing, we just need this to keep other onClickEvents from firing.
 				hideDrawer();
+			}
+			
+		});
+		
+		//set onClickListener for the "Set!" button, which applys the image as the wallpaper
+		finishBtn.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				// TODO Auto-generated method stub
+				setWallpaper();
 			}
 			
 		});
@@ -118,14 +140,8 @@ public class DecorateActivity extends Activity{
 	public void hideDrawer() {
 		iconDrawer.setVisibility(View.GONE);
 		finishBtn.setVisibility(View.VISIBLE);
-		removeListeners();
 	}
 
-	//this method removes all previously assigned clicklisteners so we aren't added images randomly
-	private void removeListeners() {
-		// TODO Auto-generated method stub
-		
-	}
 
 	//this method runs when the activity loads, and is responsible for dynamically creating items within the drawer
 	private void populateDrawer() {
@@ -171,20 +187,63 @@ public class DecorateActivity extends Activity{
 			//increment our row counter to maintain correct number of items per row
 			rowCounter ++;
 			
-			//dynamically add onClickListeners to each
+			//dynamically add onClickListeners to each, which can use the global "currentSelected" variable to ensure 
+			//we're always targeting the correct quadrant that the user selected, since it is updated when the drawer opens
 			stickerItem.setOnClickListener(new OnClickListener() {
 
 				@Override
 				public void onClick(View arg0) {
 					// user selected an item, so close the drawer
 					hideDrawer();
-					
+					System.out.println("Item in drawer clicked!");
 					Drawable selected = getResources().getDrawable(resID);
 					ImageView selectedTile = (ImageView) findViewById(currentSelected);
-					selectedTile.setImageDrawable(selected);
+					selectedTile.setImageDrawable(selected);				
 				}
 				
 			});
+		}
+	}
+	
+	//this method is run when the user taps the "Set!" button, and dynamically removes parts of the interface
+	//that the user didn't modify in order to take a screenshot, and subsequently set it as the device wallpaper.
+	private void setWallpaper() {
+		//grab a path to where we want to store the image we're creating
+		String savedPath = Environment.getExternalStorageDirectory().toString() + "/" + "PhotoSetBackground";
+		
+		Bitmap bitmap;
+		RelativeLayout rootView = (RelativeLayout) findViewById(R.id.decorate_rootView);
+		View root = rootView.getRootView();
+		root.setDrawingCacheEnabled(true);
+		bitmap = Bitmap.createBitmap(root.getDrawingCache());
+		root.setDrawingCacheEnabled(false);
+		
+		FileOutputStream os = null;
+		File imageFile = new File(savedPath);
+		
+		try {
+			os = new FileOutputStream(imageFile);
+			bitmap.compress(Bitmap.CompressFormat.JPEG, 90, os);
+			try {
+				os.flush();
+				os.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} catch (FileNotFoundException e) {
+			
+		}
+		
+		//now set the saved image as the device's wallpaper
+		WallpaperManager wallpaperManager = WallpaperManager.getInstance(this.getApplicationContext());
+		System.out.println("Desired min width is:  " + wallpaperManager.getDesiredMinimumWidth());
+		System.out.println("Desired min height is:  " + wallpaperManager.getDesiredMinimumHeight());
+		try {
+			wallpaperManager.setBitmap(bitmap);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 	
