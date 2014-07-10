@@ -82,7 +82,7 @@ public class DecorateActivity extends Activity{
 			
 		});
 		
-		//set onClickListener for the "Set!" button, which applys the image as the wallpaper
+		//set onClickListener for the "Set!" button, which applys the image as the device wallpaper
 		finishBtn.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -99,13 +99,19 @@ public class DecorateActivity extends Activity{
 		
 		for (int i = 1; i < 10; i++) {
 			String buttonLabel = "imageView" + i;
+			
+			//use this to determine where to insert values into the array, since we're starting at one
 			int arraySync = i-1;
 			
+			//use our dyanamic string above to grab the id of the item imageView it finds
 			int resID = getResources().getIdentifier(buttonLabel, "id", DecorateActivity.this.getPackageName());
+			
+			//add the id to our array
 			idArray[arraySync] = resID;
 		}
 		System.out.println("Finalized array is:  " + idArray.toString());
 		
+		//now that we have all of the ids, dynamically apply onClickListeners to each of them
 		for (int i = 0; i < idArray.length; i++) {
 			ImageView current = (ImageView) findViewById(idArray[i]);
 			final int temp = i;
@@ -121,7 +127,7 @@ public class DecorateActivity extends Activity{
 		}
 	}
 	
-
+	//detect when the user taps the "back" button
     @Override
     public void onBackPressed() {
     	finish();
@@ -133,7 +139,7 @@ public class DecorateActivity extends Activity{
 		// TODO Auto-generated method stub
 		Intent result = new Intent();
 		
-		//return our boolean so MainActivity knows if it needs to update it's own background
+		//return our boolean so MainActivity knows if it needs to update it's own background to match
 		result.putExtra("wasUpdated", wallpaperSet);
 		
 		setResult(Activity.RESULT_OK, result);
@@ -142,7 +148,7 @@ public class DecorateActivity extends Activity{
 
 	//this method is responsible for displaying the drawer containing the icons the user can choose from.
 	//it receives the raw id of which imageView so we can dynamically do things in code, rather than keep 
-	//track of 9 different image views
+	//track of 9 different image views (plus 6 more for the stickers)
 	public void enableDrawer(int Id) {
 		
 		currentSelected = Id;
@@ -151,6 +157,7 @@ public class DecorateActivity extends Activity{
 		iconDrawer.setVisibility(View.VISIBLE);
 	}
 	
+	//this method is called to hide the drawer when the user chooses something
 	public void hideDrawer() {
 		iconDrawer.setVisibility(View.GONE);
 		finishBtn.setVisibility(View.VISIBLE);
@@ -194,8 +201,10 @@ public class DecorateActivity extends Activity{
 			//get our image
 			Drawable stickerImage = getResources().getDrawable(resID);
 			
+			//set to the imageView
 			stickerItem.setImageDrawable(stickerImage);
 			
+			//add the imageView to the drawer for display
 			stickerHolder.addView(stickerItem);
 			
 			//increment our row counter to maintain correct number of items per row
@@ -210,8 +219,14 @@ public class DecorateActivity extends Activity{
 					// user selected an item, so close the drawer
 					hideDrawer();
 					System.out.println("Item in drawer clicked!");
+					
+					//grab the item that was selected using the created id (above)
 					Drawable selected = getResources().getDrawable(resID);
+					
+					//grab the imageView that corresponds with the one the user wants to edit
 					ImageView selectedTile = (ImageView) findViewById(currentSelected);
+					
+					//set the selected image to the user-selected tile
 					selectedTile.setImageDrawable(selected);				
 				}
 				

@@ -263,8 +263,7 @@ public class MainActivity extends Activity {
 				imageHolder.setVisibility(View.GONE);
 			}			
 			
-			//set new background
-			
+			//set new background to this activity
 			activityLayout.setBackground(currentWallpaper);
 		}
 	}   
