@@ -22,7 +22,7 @@
     </LinearLayout>
 
     <Button
-        android:id="@+id/button1"
+        android:id="@id/decorate_btn"
         android:layout_width="120dp"
         android:layout_height="60dp"
         android:layout_alignParentBottom="true"
@@ -32,5 +32,14 @@
         android:minHeight="0dp"
         android:minWidth="0dp"
         android:width="24dp" />
+
+    <ImageView
+        android:id="@id/logo"
+        android:layout_width="150dp"
+        android:layout_height="100dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="-30dp"
+        android:src="@drawable/logo" android:contentDescription="@string/app_logo_desc"/>
 
 </RelativeLayout>

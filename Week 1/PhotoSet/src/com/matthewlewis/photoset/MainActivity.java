@@ -8,7 +8,8 @@
  * File MainActivity.java
  * 
  * Purpose MainActivity is the main interface for the entire app.  It displays an images the user has opted to "share" to the activity, and allows
- * them to select a "decorate" tab, which will load a subsequent activity to add image overlays.
+ * them to select a "decorate" tab, which will load a subsequent activity to add image overlays.  Intents sharing images sometimes are formatted differently,
+ * depending on the app creating the intent.  For example, 
  * 
  */
 package com.matthewlewis.photoset;
@@ -21,6 +22,7 @@ import com.matthewlewis.photomail.R;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -31,10 +33,15 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.ViewGroup.LayoutParams;
+import android.view.Window;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import android.provider.MediaStore;
 
@@ -43,14 +50,35 @@ public class MainActivity extends Activity {
 	LinearLayout activityLayout;
 	LayoutParams imageParams;
 	int screenHeight;
+	Button decorateBtn;
+	ImageView logo;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+      //get rid of that pesky title bar and set to fullscreen
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        
+        //lock our orientation to portrait, which keeps our images from stretching and keeps the size correct for a background image
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        
         setContentView(R.layout.activity_main);
+        
+        //grab reference to our logo imageView
+        logo = (ImageView) findViewById(R.id.logo);
+        
+        //grab a reference to our default imageView
         ImageView imageHolder = (ImageView) findViewById(R.id.image_holder);
         
+        //grab a reference to our decorate button
+        decorateBtn = (Button) findViewById(R.id.decorate_btn);
+        
+        //grab the containing layout for the images so we can dynamically add more images if necessary
         activityLayout = (LinearLayout) findViewById(R.id.activity_holder);
+        
+        //crate layoutParams for any images we need to dynamically add
         imageParams = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
         
         //Get our intent to see if our app was started by another app
@@ -60,29 +88,37 @@ public class MainActivity extends Activity {
     	
     	String receivedType = intent.getType();
     	
+    	//grab our screen displayMetrics so we can determine the height of the display
     	DisplayMetrics metrics = this.getResources().getDisplayMetrics();
     	
+    	//set our height variable, which helps us to determine the height of images if there are more than one
     	screenHeight = metrics.heightPixels;
-    	System.out.println("Screen height is:  " + screenHeight);
+    	
+    	//add click listener to our decorate button
+    	decorateBtn.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				// TODO Auto-generated method stub
+				System.out.println("user tapped decorate!");
+				
+				//get rid of this activity's interface, since we will potentially be taking a screenshot within the next activity
+				logo.setVisibility(View.GONE);
+				decorateBtn.setVisibility(View.GONE);
+			}
+    		
+    	});
     	
     	//if we have a valid "type" contained within intent and its starts with "image/"...
     	if (receivedType != null && receivedType.startsWith("image/")) {
     		if (receivedAction.equals("android.intent.action.SEND")) {
-    			
+    			System.out.println("One image passed!");
         			
-        		
+        		//grab our single passed image URI from the intent
         		Uri receivedUri = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
         		
+        		//apply the image located at the Uri to our imageView
         		imageHolder.setImageURI(receivedUri);
-        		
-        		
-        		
-        		//imageParams = imageHolder.getLayoutParams();
-        		
-        		
-        		
-        		
-        		
         		
         		//check if the user instead opted to "share" more than one image
     		} else if (receivedAction.equals("android.intent.action.SEND_MULTIPLE")) {
@@ -105,6 +141,14 @@ public class MainActivity extends Activity {
     				if (array != null) {
     					System.out.println("Object within the key was:  " + array);
         				
+    					int maxHeight;
+    					
+    					//if more than 3 images were passed, alert user that only 3 will be used (avoid memory problems)
+    					if (array.size() > 3) {
+    						Toast.makeText(getApplicationContext(), "Unfortunately, PhotoSet only supports up to 3 images at once.  Using the first three.",
+    								   Toast.LENGTH_LONG).show();
+    					}  					
+    					
     					//for the length of the array, create a new imageView and assign the image from the uri
         				for (int i =0; i < array.size(); i++) {
         					ImageView receivedHolder = new ImageView(this);
@@ -115,14 +159,29 @@ public class MainActivity extends Activity {
         					receivedHolder.setScaleType(ImageView.ScaleType.FIT_XY);
         					
         					//use our screen's pixel height to dynamically divide the height of the images passed to us (even height)
-        					int maxHeight = screenHeight/array.size();
+        					//depending on if there are more than 3 images passed, apply a certain height
+        					if (array.size() > 3) {
+        						maxHeight = screenHeight/3;
+        					} else {
+        						maxHeight = screenHeight/array.size();
+        					}
+        					
         					receivedHolder.getLayoutParams().height = maxHeight;
+        					System.out.println("Height assigned was:  " + maxHeight);
         					activityLayout.addView(receivedHolder);
+        					
+        					//to avoid OOM errors, limit to three images
+        					if (i == 2) {
+        						break;
+        					}
         				}
     				}				
     				activityLayout.requestLayout();
     			}
     		}
+    		
+    	} else {
+    		//intent was the default, meaning the activity was launched manually by user
     		
     	}
         
@@ -153,8 +212,7 @@ public class MainActivity extends Activity {
         cursor.close();
     }
 
-
-    @Override
+	@Override
     public boolean onCreateOptionsMenu(Menu menu) {
         
         // Inflate the menu; this adds items to the action bar if it is present.
