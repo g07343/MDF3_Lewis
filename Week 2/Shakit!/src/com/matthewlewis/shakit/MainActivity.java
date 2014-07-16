@@ -3,9 +3,13 @@ package com.matthewlewis.shakit;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 
+import com.matthewlewis.shakit.MusicService.LocalBinder;
+
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
 import android.hardware.Sensor;
@@ -16,6 +20,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.provider.MediaStore;
@@ -43,7 +48,8 @@ public class MainActivity extends Activity implements SensorEventListener{
 	TextView yField;
 	TextView zField;
 	Context context;
-	
+	MusicService mService;
+	boolean mBound = false;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,23 +76,17 @@ public class MainActivity extends Activity implements SensorEventListener{
       //get ready to start our service to handle music playback
         MusicService musicService = new MusicService();
         
-        //create instance of custom handler class
-        final MusicHandler musicHandler = new MusicHandler(context);
-        
-        //create messenger object to communicate back and forth
-        Messenger musicMessenger = new Messenger(musicHandler);
         
         //create an intent to send to the service
-        Intent startMusicService = new Intent(context, musicService.getClass());
-        
-        //add handler to the intent
-        startMusicService.putExtra(MusicService.MESSENGER_KEY, musicMessenger);
+        Intent startMusicService = new Intent(context, musicService.getClass());       
         
         //add our list of file locations to the service via intent
         startMusicService.putExtra(MusicService.URI_ARRAY, songPaths);
         
         //start the service
         context.startService(startMusicService);
+        
+        context.bindService(startMusicService, mConnection, Context.BIND_AUTO_CREATE);
         
         //get access to our sensor manager/sensors
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -210,6 +210,9 @@ public class MainActivity extends Activity implements SensorEventListener{
 			}
 			if (newDistance != firstDistance) {
 				System.out.println("User has covered proximity sensor!");
+				if (mBound && mService != null) {
+					mService.stopMusic();
+				}
 			}
 			
 		} else if (event.sensor == accelerometerSensor) {
@@ -290,22 +293,36 @@ public class MainActivity extends Activity implements SensorEventListener{
 		sensorManager.registerListener(this, accelerometerSensor, SensorManager.SENSOR_DELAY_NORMAL);
 	}
 	
-	//custom handler class for our music service
-	private static class MusicHandler extends Handler {
-		private final WeakReference<MainActivity> mActivity;
+	private ServiceConnection mConnection = new ServiceConnection() {
 		
-		public MusicHandler(Context context) {
-			mActivity = new WeakReference<MainActivity>((MainActivity) context);
-		}
-
 		@Override
-		public void handleMessage(Message msg) {
-			MainActivity activity = mActivity.get();
-			if (activity != null) {
-				
-			}
+		public void onServiceConnected(ComponentName className, IBinder service) {
+			//from Google documentation, use this to bind our activity to our service so we can communicate and access it's functions
+			LocalBinder binder = (LocalBinder) service;
+			mService = binder.getService();
+			mBound = true;
 		}
 		
-		
-	}
+		@Override
+		public void onServiceDisconnected(ComponentName arg0) {
+			mBound = false;
+		}
+	};
+	
+	@Override
+    protected void onStart() {
+        super.onStart();
+        System.out.println("onStart runs!!!!!!!!!!!!");
+        mBound = true;
+    }
+	
+	@Override
+    protected void onStop() {
+        super.onStop();
+        // Unbind from the service
+        if (mBound) {
+            unbindService(mConnection);
+            mBound = false;
+        }
+    }
 }
