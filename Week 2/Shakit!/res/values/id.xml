@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item type="id" name="x_field" />
+    <item type="id" name="y_field" />
+    <item type="id" name="z_field" />
+</resources>

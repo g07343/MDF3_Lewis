@@ -1,9 +1,11 @@
 package com.matthewlewis.shakit;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
 import android.hardware.Sensor;
@@ -13,11 +15,15 @@ import android.hardware.SensorManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.os.Messenger;
 import android.provider.MediaStore;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.TextView;
 
 
 public class MainActivity extends Activity implements SensorEventListener{
@@ -31,15 +37,13 @@ public class MainActivity extends Activity implements SensorEventListener{
 	String[] songLengths;
 	private float firstDistance;
 	private float newDistance;
-	private long accelTime = 0;
-	private long accelElapsed = 0;
-	private float accelOriginalX = 0;
-	private float accelNewX = 0;
-	private float accelOriginalY = 0;
-	private float accelNewY = 0;
 	private long lastUpdate = -1;
 	private float last_x, last_y, last_z;
-	private boolean isBusy;
+	TextView xField;
+	TextView yField;
+	TextView zField;
+	Context context;
+	
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,11 +56,37 @@ public class MainActivity extends Activity implements SensorEventListener{
         
         setContentView(R.layout.activity_main);
         
-        //set up our boolean, which keeps double shake gestures from being recognized
-        isBusy = false;
+        //grab global context variable
+        context = this;       
+        
+        //this will be deleted later and is only for current testing...
+        xField = (TextView) findViewById(R.id.x_field);
+        yField = (TextView) findViewById(R.id.y_field);
+        zField = (TextView) findViewById(R.id.z_field);
         
         //grab all of the audio on the device, so we can set up our interface
         getAllAudio();
+        
+      //get ready to start our service to handle music playback
+        MusicService musicService = new MusicService();
+        
+        //create instance of custom handler class
+        final MusicHandler musicHandler = new MusicHandler(context);
+        
+        //create messenger object to communicate back and forth
+        Messenger musicMessenger = new Messenger(musicHandler);
+        
+        //create an intent to send to the service
+        Intent startMusicService = new Intent(context, musicService.getClass());
+        
+        //add handler to the intent
+        startMusicService.putExtra(MusicService.MESSENGER_KEY, musicMessenger);
+        
+        //add our list of file locations to the service via intent
+        startMusicService.putExtra(MusicService.URI_ARRAY, songPaths);
+        
+        //start the service
+        context.startService(startMusicService);
         
         //get access to our sensor manager/sensors
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -184,11 +214,10 @@ public class MainActivity extends Activity implements SensorEventListener{
 			
 		} else if (event.sensor == accelerometerSensor) {
 			long currentTime = System.currentTimeMillis();
-			int threshHold = 9250000;
+			int threshHold = 9000000;
 			
 			if ((currentTime - lastUpdate) > 190) {
 				
-				if (isBusy == false) {
 					long diffTime = (currentTime - lastUpdate);
 					lastUpdate = currentTime;
 					
@@ -196,30 +225,43 @@ public class MainActivity extends Activity implements SensorEventListener{
 					float y = event.values[1];
 					float z = event.values[2];
 					
+					xField.setText(Float.toString(x));
+					yField.setText(Float.toString(y));
+					zField.setText(Float.toString(z));
+					
 					float speed = Math.abs(x+y+z - last_x - last_y - last_z) / diffTime * 10000;
 					
-					
+					if (speed > threshHold && x > 5.8 && y < 5.7) {
+						System.out.println("LEFT???");
+						System.out.println("X was:  " + x + " and Y was:  " + y);
+					} else if (speed > threshHold && x < -5.8 && y < 5.7) {
+						System.out.println("RIGHT??");
+						System.out.println("X was:  " + x + " and Y was:  " + y);
+					}
 					
 					float calcFloat = (float)Math.pow(10, 4);
 					x = x * calcFloat;
 					float temp = Math.round(x);
 					
-					
+					//System.out.println("Temp was:  " + temp);
 					
 					if (speed > threshHold && temp>10.0000) {
-						System.out.println("LEFT");
-						isBusy = true;
+						//System.out.println("LEFT");
+			        	sensorManager.unregisterListener(this, accelerometerSensor);
+			        	changeTrack("back");
+			        	
+			
 					} else if (speed > threshHold && temp<-10.0000) {
-						System.out.println("RIGHT");
-						isBusy = true;
+						//System.out.println("RIGHT");
+			        	sensorManager.unregisterListener(this, accelerometerSensor);
+			        	changeTrack("forward");
+			        	
 					}
 					
 					last_x = x;
 		            last_y = y;
 		            last_z = z;
-				} else {
-					isBusy = false;
-				}
+		            
 			}
 				
 			
@@ -230,5 +272,40 @@ public class MainActivity extends Activity implements SensorEventListener{
 			float xValue = event.values[0];
 			//System.out.println("Linear accel value of X is:  " + xValue);
 		}
+	}
+	
+	//this method changes the selected audio clip depending upon which "direction" string it is passed.  
+	//when done, it reenables the sensor listeners
+	public void changeTrack(String direction) {
+		if (direction.equals("forward")) {
+			//user shook device to the right, so skip to next audio file
+			
+		} else if (direction.equals("back")) {
+			//user shook device to the left, so go to previous audio file
+			
+		} else {
+			//random was activiated
+		}
+		//now that we've handled the gesture, re-add the listener to capture future requests
+		sensorManager.registerListener(this, accelerometerSensor, SensorManager.SENSOR_DELAY_NORMAL);
+	}
+	
+	//custom handler class for our music service
+	private static class MusicHandler extends Handler {
+		private final WeakReference<MainActivity> mActivity;
+		
+		public MusicHandler(Context context) {
+			mActivity = new WeakReference<MainActivity>((MainActivity) context);
+		}
+
+		@Override
+		public void handleMessage(Message msg) {
+			MainActivity activity = mActivity.get();
+			if (activity != null) {
+				
+			}
+		}
+		
+		
 	}
 }
