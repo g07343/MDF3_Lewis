@@ -73,20 +73,22 @@ public class MainActivity extends Activity implements SensorEventListener{
         //grab all of the audio on the device, so we can set up our interface
         getAllAudio();
         
-      //get ready to start our service to handle music playback
+        //get ready to start our service to handle music playback
         MusicService musicService = new MusicService();
         
         
         //create an intent to send to the service
-        Intent startMusicService = new Intent(context, musicService.getClass());       
+        //Intent startMusicService = new Intent(context, musicService.getClass());       
         
         //add our list of file locations to the service via intent
-        startMusicService.putExtra(MusicService.URI_ARRAY, songPaths);
+        //startMusicService.putExtra(MusicService.URI_ARRAY, songPaths);
+        
+        //add list of titles to the intent as well
+        //startMusicService.putExtra(MusicService.TITLE_ARRAY, songTitles);
         
         //start the service
-        context.startService(startMusicService);
         
-        context.bindService(startMusicService, mConnection, Context.BIND_AUTO_CREATE);
+        //context.bindService(startMusicService, mConnection, Context.BIND_AUTO_CREATE);
         
         //get access to our sensor manager/sensors
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -171,7 +173,7 @@ public class MainActivity extends Activity implements SensorEventListener{
                 	
                 	float duration = testPlayer.getDuration() / 1000;
                 	songLengths[i] = Float.toString(duration);
-                	System.out.println("Duration of audio is:  " + duration);
+                	//System.out.println("Duration of audio is:  " + duration);
                 } catch (IOException e) {
                 	System.out.println("Catch block triggered...");
                 	
@@ -312,17 +314,52 @@ public class MainActivity extends Activity implements SensorEventListener{
 	@Override
     protected void onStart() {
         super.onStart();
-        System.out.println("onStart runs!!!!!!!!!!!!");
-        mBound = true;
+      //get ready to start our service to handle music playback
+        MusicService musicService = new MusicService();
+        System.out.println("onStart runs!#)*)(@#*");
+        
+        if (mService != null) {
+        	System.out.println("Service is not null");
+        	Intent startMusicService = new Intent(context, musicService.getClass());
+        	context.bindService(startMusicService, mConnection, Context.BIND_AUTO_CREATE);
+        	mService.testFunction();
+        	mBound = true;
+        } else {
+        	
+            
+            
+            //create an intent to send to the service
+            Intent startMusicService = new Intent(context, musicService.getClass());       
+            
+            //add our list of file locations to the service via intent
+            startMusicService.putExtra(MusicService.URI_ARRAY, songPaths);
+            
+            //add list of titles to the intent as well
+            startMusicService.putExtra(MusicService.TITLE_ARRAY, songTitles);
+            
+            //start the service
+            
+            context.bindService(startMusicService, mConnection, Context.BIND_AUTO_CREATE);
+            
+            System.out.println("Service was null");
+            mBound = true;
+        }
+        
     }
+	
+
+	
 	
 	@Override
     protected void onStop() {
         super.onStop();
+        System.out.println("onStop Called!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         // Unbind from the service
         if (mBound) {
-            unbindService(mConnection);
-            mBound = false;
+        	if (mConnection != null && mService != null) {
+        		//unbindService(mConnection);
+        		//mBound = false;
+        	}                    
         }
     }
 }
