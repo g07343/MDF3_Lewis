@@ -2,6 +2,8 @@ package com.matthewlewis.shakit;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import android.app.IntentService;
 import android.app.Notification;
@@ -45,6 +47,8 @@ public class MusicService extends Service{
 	String[] songTitles;
 	static MediaPlayer musicPlayer;
 	boolean isPaused;
+	boolean activityAlive;
+	boolean timerToggle;
 	
 	public class LocalBinder extends Binder {
 		MusicService getService() {
@@ -79,11 +83,13 @@ public class MusicService extends Service{
 				buildNotification("play/pause");
 
 			} else if (intent.getAction().equals("Next")) {
-				int numSongs = URI_ARRAY.length() -1;
+				int numSongs = songPaths.length -1;
 				int nextSong = nowPlaying +1;
 				
+				System.out.println("NEXT Array length total is:  " + numSongs);
+				System.out.println("NEXT Song should be:  " + nextSong);
 				
-				if (nextSong >= numSongs) {
+				if (nextSong > numSongs) {
 					nextSong = 0;
 					playSong(nextSong);
 				} else  {
@@ -91,13 +97,13 @@ public class MusicService extends Service{
 				}
 				buildNotification("default");
 			} else if (intent.getAction().equals("Previous")) {
-				int numSongs = URI_ARRAY.length() -1;
+				int numSongs = songPaths.length -1;
 				int prevSong = nowPlaying -1;
-				System.out.println("Array length total is:  " + numSongs);
-				System.out.println("Next Song should be:  " + prevSong);
+				System.out.println("PREV Array length total is:  " + numSongs);
+				System.out.println("PREV Song should be:  " + prevSong);
 				
 				if (prevSong <= -1) {
-					prevSong = URI_ARRAY.length() -2;
+					prevSong = songPaths.length -1;
 					playSong(prevSong);
 				} else {
 					playSong(prevSong);
@@ -113,7 +119,7 @@ public class MusicService extends Service{
 
 			}
 		} else { 
-			buildNotification("destroy");
+			//buildNotification("destroy");
 		}
 		
 		
@@ -126,11 +132,16 @@ public class MusicService extends Service{
 		nm.notify(TXT_NOTIFICATION_ID, notification);
 	}
 
-	@Override
-	public void onDestroy() {
-		System.out.println("Service onDestroy function runs");
-	}
 	
+	
+	
+
+	
+
+
+
+
+
 
 	@Override
 	public IBinder onBind(Intent intent) {
@@ -138,6 +149,57 @@ public class MusicService extends Service{
 		Log.i("ON_BIND", "Music service started.");
 		// android.os.Debug.waitForDebugger();
 
+		//set up our boolean, which we set back and forth to true/false allowing us to determine if MainActivity
+		//is for some reason detroyed
+		activityAlive = true;
+		
+		//set up toggle boolean to give broadcast more time to be set
+		timerToggle = false;
+		
+		//set up a timer to constantly check if our MainActivity is still alive
+		//this is the only way I can think of to ensure we get rid of our notification in the event MainActivity is destroyed
+		Timer aliveTimer = new Timer();
+		TimerTask timerTask = new TimerTask() {
+
+			
+			
+			@Override
+			public void run() {
+				
+				SharedPreferences prefs = getSharedPreferences("com.matthewlewis.shakit", Context.MODE_PRIVATE);
+				
+				if (timerToggle == true) {
+					prefs.edit().putBoolean("isAlive", false).apply();
+					timerToggle = false;
+				} else {
+					if (prefs.contains("isAlive")) {
+						
+						//boolean isAlive = MainActivity.class.isActive;
+						Intent isAlive = new Intent("com.matthewlewis.shakit.PauseReceiver");
+						sendBroadcast(isAlive);
+						
+						boolean isRunning = prefs.getBoolean("isAlive", false);
+						
+						if (isRunning == false) {
+							buildNotification("destroy");
+							System.out.println("MainActivity was killed!");
+						} else {
+							System.out.println("MainActivity is alive...");
+							if (notification == null) {
+								buildNotification("default");
+							}
+						}
+					}
+					
+					
+				}
+				
+			}
+			
+		};
+		aliveTimer.scheduleAtFixedRate(timerTask, 3000, 3000);
+		
+		
 		//set up our global music player instance
 		musicPlayer = new MediaPlayer();
 		
@@ -155,8 +217,7 @@ public class MusicService extends Service{
 		
 		startTime = System.currentTimeMillis();
 
-		pauseReceiver = new PauseReceiver();
-        this.registerReceiver(new PauseReceiver(), new IntentFilter("com.matthewlewis.shakit.PauseReceiver"));
+		
 		
 		// grab our extras data
 		Bundle extras = intent.getExtras();
@@ -173,7 +234,11 @@ public class MusicService extends Service{
 		return serviceBinder;
 	}
 
-
+	public TimerTask checkApp () {
+		
+		return null;
+	}
+	
 
 
 	public void playSong(int songPlace) {
@@ -239,22 +304,6 @@ public class MusicService extends Service{
 		}
 	}
 	
-	public void setCurrentMusic() {
-		if (musicPlayer != null) {
-			
-//			SharedPreferences prefs = this.getSharedPreferences("com.matthewlewis.shakit", Context.MODE_PRIVATE);
-//			if (nowPlaying != null) {
-//				prefs.edit().putInt("song", nowPlaying).apply();
-//				if (musicPlayer.getCurrentPosition() != -1) {
-//					int currentPosition = musicPlayer.getCurrentPosition();
-//					prefs.edit().putInt("currentPosition", currentPosition);
-//				}
-//				
-//					
-//			}
-		}
-		
-	}
 	
 	public void checkPlayer() {
 		if (musicPlayer == null) {
@@ -269,7 +318,7 @@ public class MusicService extends Service{
 		@Override
 		public void onReceive(Context arg0, Intent arg1) {
 			// TODO Auto-generated method stub
-			
+			System.out.println("onReceive");
 			
 		}
 		
@@ -278,7 +327,9 @@ public class MusicService extends Service{
 public void buildNotification (String type) {
 		nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		
-		
+		if (songTitles != null) {
+			
+		}
 		
 		//create a basic intent to pause
     	Intent basicPause = new Intent(this, MusicService.class);
@@ -351,8 +402,11 @@ public void buildNotification (String type) {
     	
     	//notificationBuilder.setContentIntent(openActivityPending);
     	notificationBuilder.setDeleteIntent(closePending);
-    	notification = notificationBuilder.build();  	
-    	nm.notify(TXT_NOTIFICATION_ID, notification);
+    	notification = notificationBuilder.build();  
+    	if (!(type.equals("destroy"))) {
+    		nm.notify(TXT_NOTIFICATION_ID, notification);
+    	}
+    	
 		
     	
     	

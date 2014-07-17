@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 
 import com.matthewlewis.shakit.MusicService.LocalBinder;
+import com.matthewlewis.shakit.MusicService.PauseReceiver;
 
 import android.app.Activity;
 import android.app.Notification;
@@ -15,6 +16,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
 import android.hardware.Sensor;
@@ -52,10 +54,10 @@ public class MainActivity extends Activity implements SensorEventListener{
 	TextView yField;
 	TextView zField;
 	Context context;
-	MusicService mService;
+	static MusicService mService;
 	boolean mBound = false;
 	boolean isActive;
-	
+	PauseReceiver pauseReceiver;
 	
 	
 	
@@ -96,7 +98,8 @@ public class MainActivity extends Activity implements SensorEventListener{
         //add list of titles to the intent as well
         //startMusicService.putExtra(MusicService.TITLE_ARRAY, songTitles);
         
-        
+        pauseReceiver = new PauseReceiver();
+        this.registerReceiver(new PauseReceiver(), new IntentFilter("com.matthewlewis.shakit.PauseReceiver"));
         
         //get access to our sensor manager/sensors
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -330,6 +333,9 @@ public class MainActivity extends Activity implements SensorEventListener{
         	System.out.println("Service is not null");
         	Intent startMusicService = new Intent(context, musicService.getClass());
         	context.bindService(startMusicService, mConnection, 0);
+        	if (mService.notification == null) {
+        		mService.buildNotification("default");
+        	}
         	
         	mBound = true;
         } else {
@@ -357,11 +363,22 @@ public class MainActivity extends Activity implements SensorEventListener{
         
     }
 	
+	
 	@Override
 	protected void onDestroy() {
 		System.out.println("MainActivity Destroyed!");
+		mService.buildNotification("destroy");
+		if (mBound) {
+			mService.unbindService(mConnection);
+		}
 		
-		mService.setCurrentMusic();
+		try {
+			this.unregisterReceiver(pauseReceiver);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		super.onDestroy();
 	}
 	
@@ -377,7 +394,7 @@ public class MainActivity extends Activity implements SensorEventListener{
 		Intent pauseIntent = new Intent("com.matthewlewis.shakit.PauseReceiver");
 		sendBroadcast(pauseIntent);
 		
-		mService.setCurrentMusic();
+		
         
 		super.onStop();
         
@@ -386,12 +403,12 @@ public class MainActivity extends Activity implements SensorEventListener{
         	
         }
         
-        System.out.println("onStop Called!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        
         // Unbind from the service
         if (mBound) {
         	if (mConnection != null && mService != null) {
-        		//unbindService(mConnection);
-        		//mBound = false;
+        		unbindService(mConnection);
+        		mBound = false;
         		
         		//remove our listener for when the user covers proximity, since the activity is no longer active
         		sensorManager.unregisterListener(this, proximitySensor);
@@ -402,6 +419,19 @@ public class MainActivity extends Activity implements SensorEventListener{
         }
     }
 	
+	//we use this receiver to be informed of when the user taps the "pause" button from the notification.
+		//While MusicService pauses itself, we need to update the notification to use a "play" button if paused, and vice versa
+		public static class PauseReceiver extends BroadcastReceiver {
 
+			@Override
+			public void onReceive(Context context, Intent arg1) {
+				// TODO Auto-generated method stub
+				System.out.println("onReceive");
+				SharedPreferences prefs = context.getSharedPreferences("com.matthewlewis.shakit", Context.MODE_PRIVATE);
+				prefs.edit().putBoolean("isAlive", true).apply();
+				
+			}
+			
+		}
 	
 }
