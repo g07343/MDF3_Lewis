@@ -6,9 +6,14 @@ import java.lang.ref.WeakReference;
 import com.matthewlewis.shakit.MusicService.LocalBinder;
 
 import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
@@ -19,11 +24,9 @@ import android.hardware.SensorManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
-import android.os.Messenger;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
@@ -37,6 +40,7 @@ public class MainActivity extends Activity implements SensorEventListener{
 	private Sensor accelerometerSensor;
 	private Sensor proximitySensor;
 	private Sensor linearAcceleration;
+	private final int TXT_NOTIFICATION_ID = 1;
 	String[] songTitles;
 	String[] songPaths;
 	String[] songLengths;
@@ -50,6 +54,10 @@ public class MainActivity extends Activity implements SensorEventListener{
 	Context context;
 	MusicService mService;
 	boolean mBound = false;
+	boolean isActive;
+	
+	
+	
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,15 +68,17 @@ public class MainActivity extends Activity implements SensorEventListener{
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,  WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         
+        
+        
+        
+        
+        isActive = true;
+        
         setContentView(R.layout.activity_main);
         
         //grab global context variable
         context = this;       
         
-        //this will be deleted later and is only for current testing...
-        xField = (TextView) findViewById(R.id.x_field);
-        yField = (TextView) findViewById(R.id.y_field);
-        zField = (TextView) findViewById(R.id.z_field);
         
         //grab all of the audio on the device, so we can set up our interface
         getAllAudio();
@@ -86,9 +96,7 @@ public class MainActivity extends Activity implements SensorEventListener{
         //add list of titles to the intent as well
         //startMusicService.putExtra(MusicService.TITLE_ARRAY, songTitles);
         
-        //start the service
         
-        //context.bindService(startMusicService, mConnection, Context.BIND_AUTO_CREATE);
         
         //get access to our sensor manager/sensors
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -230,9 +238,6 @@ public class MainActivity extends Activity implements SensorEventListener{
 					float y = event.values[1];
 					float z = event.values[2];
 					
-					xField.setText(Float.toString(x));
-					yField.setText(Float.toString(y));
-					zField.setText(Float.toString(z));
 					
 					float speed = Math.abs(x+y+z - last_x - last_y - last_z) / diffTime * 10000;
 					
@@ -318,14 +323,17 @@ public class MainActivity extends Activity implements SensorEventListener{
         MusicService musicService = new MusicService();
         System.out.println("onStart runs!#)*)(@#*");
         
+        //now that the app has started, register listeners to the sensors we need for gestures
+        sensorManager.registerListener(this, proximitySensor, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(this, accelerometerSensor, SensorManager.SENSOR_DELAY_NORMAL);
         if (mService != null) {
         	System.out.println("Service is not null");
         	Intent startMusicService = new Intent(context, musicService.getClass());
-        	context.bindService(startMusicService, mConnection, Context.BIND_AUTO_CREATE);
-        	mService.testFunction();
+        	context.bindService(startMusicService, mConnection, 0);
+        	
         	mBound = true;
         } else {
-        	
+        	//this all needs to be moved once the interface has been built out, since this basically runs automatically when the app launches (BAD!)
             
             
             //create an intent to send to the service
@@ -337,8 +345,10 @@ public class MainActivity extends Activity implements SensorEventListener{
             //add list of titles to the intent as well
             startMusicService.putExtra(MusicService.TITLE_ARRAY, songTitles);
             
-            //start the service
+            //add a track to play
+            startMusicService.putExtra("number", 0);
             
+            //start the service by binding to it          
             context.bindService(startMusicService, mConnection, Context.BIND_AUTO_CREATE);
             
             System.out.println("Service was null");
@@ -347,19 +357,51 @@ public class MainActivity extends Activity implements SensorEventListener{
         
     }
 	
-
+	@Override
+	protected void onDestroy() {
+		System.out.println("MainActivity Destroyed!");
+		
+		mService.setCurrentMusic();
+		super.onDestroy();
+	}
 	
+	@Override
+	protected void onPause() {
+		System.out.println("OnPause called.................");
+		
+		super.onPause();
+	}
 	
 	@Override
     protected void onStop() {
-        super.onStop();
+		Intent pauseIntent = new Intent("com.matthewlewis.shakit.PauseReceiver");
+		sendBroadcast(pauseIntent);
+		
+		mService.setCurrentMusic();
+        
+		super.onStop();
+        
+        if (this.isFinishing()) {
+        	System.out.println("Activity was finishing!");
+        	
+        }
+        
         System.out.println("onStop Called!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         // Unbind from the service
         if (mBound) {
         	if (mConnection != null && mService != null) {
         		//unbindService(mConnection);
         		//mBound = false;
+        		
+        		//remove our listener for when the user covers proximity, since the activity is no longer active
+        		sensorManager.unregisterListener(this, proximitySensor);
+        		
+        		//remove listener for motion gestures since activity is no longer active
+        		sensorManager.unregisterListener(this, accelerometerSensor);
         	}                    
         }
     }
+	
+
+	
 }

@@ -29,6 +29,11 @@
             android:launchMode="singleTop">
         </activity>
         <service android:name="MusicService"></service>
+        <receiver android:name="PauseReceiver" >
+            <intent-filter>
+                <action android:name="com.matthewlewis.shakit.MusicService.PauseReceiver"/>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
