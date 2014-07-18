@@ -96,24 +96,16 @@ public class MainActivity extends Activity implements SensorEventListener{
         //grab our buttons
         playPause = (ImageButton) findViewById(R.id.playPause_btn);
         next = (ImageButton) findViewById(R.id.next_btn);
-        previous = (ImageButton) findViewById(R.id.previous_btn);
-        
-        
+        previous = (ImageButton) findViewById(R.id.previous_btn);        
         
         isActive = true;
-        
-        
-        
+               
         //grab global context variable
         context = this;       
-        
-        
+                
         //grab all of the audio on the device, so we can set up our interface
         getAllAudio();
-        
-      
-        
-        
+             
         //set up interface to display music found
         setSongDetails(0);
         
@@ -161,9 +153,7 @@ public class MainActivity extends Activity implements SensorEventListener{
 					mService.stopMusic();
 					mService.buildNotification("play/pause");
 					playPause.setImageResource(R.drawable.play);
-				}
-				
-				
+				}				
 			}
         	
         });
@@ -252,11 +242,30 @@ public class MainActivity extends Activity implements SensorEventListener{
 
         //grab the number of found items so we can create arrays of appropriate size
         int numSongs = musicCursor.getCount();
+        
+        
 
-        //set up two string arrays, one to hold the name of each found audio clip, and another to contain the filepaths
-        songTitles = new String[numSongs];
-        songPaths = new String[numSongs];
-        songLengths = new String[numSongs];
+       
+        
+        //if no music on device, supply the build in songs and info (just for now)
+        if (numSongs == 0) {
+        	songPaths = new String[3];
+        	songTitles = new String[3];
+        	
+        	songPaths[0] = "android.resource://" + getPackageName() + "/" + R.raw.boogiewoogiebed;
+        	songPaths[1] = "android.resource://" + getPackageName() + "/" + R.raw.sidewayssamba;
+        	songPaths[2] = "android.resource://" + getPackageName() + "/" + R.raw.sk8board;
+        	
+        	songTitles[0] = "BoogieWoogieBed";
+        	songTitles[1] = "SidewaysSamba";
+        	songTitles[2] = "Sk8board";
+        	
+        } else {
+        	 //set up two string arrays, one to hold the name of each found audio clip, and another to contain the filepaths
+            songTitles = new String[numSongs];
+            songPaths = new String[numSongs];
+            songLengths = new String[numSongs];
+        }
         
         int i = 0;
         //grab all of our music files and and store within arrays
@@ -413,7 +422,6 @@ public class MainActivity extends Activity implements SensorEventListener{
         super.onStart();
       //get ready to start our service to handle music playback
         MusicService musicService = new MusicService();
-        System.out.println("onStart runs!#)*)(@#*");
         
         //now that the app has started, register listeners to the sensors we need for gestures
         sensorManager.registerListener(this, proximitySensor, SensorManager.SENSOR_DELAY_NORMAL);
@@ -441,7 +449,7 @@ public class MainActivity extends Activity implements SensorEventListener{
             startMusicService.putExtra(MusicService.TITLE_ARRAY, songTitles);
             
             //add a track to play
-            startMusicService.putExtra("number", 0);
+            //startMusicService.putExtra("number", 0);
             
             //start the service by binding to it          
             context.bindService(startMusicService, mConnection, Context.BIND_AUTO_CREATE);
@@ -474,83 +482,87 @@ public class MainActivity extends Activity implements SensorEventListener{
 	@Override
 	protected void onPause() {
 		System.out.println("OnPause called.................");
-		
+
 		super.onPause();
 	}
-	
+
 	@Override
-    protected void onStop() {
+	protected void onStop() {
 		Intent pauseIntent = new Intent("com.matthewlewis.shakit.PauseReceiver");
 		sendBroadcast(pauseIntent);
-		
-		
-        
+
 		super.onStop();
-        
-        if (this.isFinishing()) {
-        	System.out.println("Activity was finishing!");
-        	
-        }
-        
-        
-        // Unbind from the service
-        if (mBound) {
-        	if (mConnection != null && mService != null) {
-        		unbindService(mConnection);
-        		mBound = false;
-        		
-        		//remove our listener for when the user covers proximity, since the activity is no longer active
-        		sensorManager.unregisterListener(this, proximitySensor);
-        		
-        		//remove listener for motion gestures since activity is no longer active
-        		sensorManager.unregisterListener(this, accelerometerSensor);
-        	}                    
-        }
-    }
-	
-	//we use this receiver to be informed of when the user taps the "pause" button from the notification.
-		//While MusicService pauses itself, we need to update the notification to use a "play" button if paused, and vice versa
-		public static class PauseReceiver extends BroadcastReceiver {
 
-			@Override
-			public void onReceive(Context context, Intent intent) {
-				// TODO Auto-generated method stub
-				System.out.println("onReceive");
-				SharedPreferences prefs = context.getSharedPreferences("com.matthewlewis.shakit", Context.MODE_PRIVATE);
-				prefs.edit().putBoolean("isAlive", true).apply();
-				
-			}
-			
-		}
-		
-		public void updatePlayBtn () {
-			Drawable current = playPause.getDrawable();
-			if (current.getConstantState().equals(getResources().getDrawable(R.drawable.play).getConstantState())) {
-				playPause.setImageResource(R.drawable.pause);
-			} else {
-				playPause.setImageResource(R.drawable.play);
-			}
-		}
-		
-		//we use this to receive information from MusicClass as to when and how the user interacts with the notification
-		public static class NotificationReceiver extends BroadcastReceiver {
+		if (this.isFinishing()) {
+			System.out.println("Activity was finishing!");
 
-			@Override
-			public void onReceive(Context context, Intent intent) {
-				MainActivity main = ((MainActivity)context);
-				// TODO Auto-generated method stub
-				System.out.println("NOTIFICATION RECEIVER");
-				Bundle extras = intent.getExtras();
-				if (extras.containsKey("playing")) {
-					//check passed string so we know what the user did
-					int newSong = extras.getInt("playing");
-					
-					main.setSongDetails(newSong);
-				} else if (extras.containsKey("notificationAction")) {
-					main.updatePlayBtn();
-				}
-			}
-			
 		}
-	
+
+		// Unbind from the service
+		if (mBound) {
+			if (mConnection != null && mService != null) {
+				unbindService(mConnection);
+				mBound = false;
+
+				// remove our listener for when the user covers proximity, since
+				// the activity is no longer active
+				sensorManager.unregisterListener(this, proximitySensor);
+
+				// remove listener for motion gestures since activity is no
+				// longer active
+				sensorManager.unregisterListener(this, accelerometerSensor);
+			}
+		}
+	}
+
+	// we use this receiver to be informed of when the user taps the "pause"
+	// button from the notification.
+	// While MusicService pauses itself, we need to update the notification to
+	// use a "play" button if paused, and vice versa
+	public static class PauseReceiver extends BroadcastReceiver {
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			// TODO Auto-generated method stub
+			System.out.println("onReceive");
+			SharedPreferences prefs = context.getSharedPreferences(
+					"com.matthewlewis.shakit", Context.MODE_PRIVATE);
+			prefs.edit().putBoolean("isAlive", true).apply();
+
+		}
+
+	}
+
+	public void updatePlayBtn() {
+		Drawable current = playPause.getDrawable();
+		if (current.getConstantState().equals(
+				getResources().getDrawable(R.drawable.play).getConstantState())) {
+			playPause.setImageResource(R.drawable.pause);
+		} else {
+			playPause.setImageResource(R.drawable.play);
+		}
+	}
+
+	// we use this to receive information from MusicClass as to when and how the
+	// user interacts with the notification
+	public static class NotificationReceiver extends BroadcastReceiver {
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			MainActivity main = ((MainActivity) context);
+			// TODO Auto-generated method stub
+			System.out.println("NOTIFICATION RECEIVER");
+			Bundle extras = intent.getExtras();
+			if (extras.containsKey("playing")) {
+				// check passed string so we know what the user did
+				int newSong = extras.getInt("playing");
+
+				main.setSongDetails(newSong);
+			} else if (extras.containsKey("notificationAction")) {
+				main.updatePlayBtn();
+			}
+		}
+
+	}
+
 }

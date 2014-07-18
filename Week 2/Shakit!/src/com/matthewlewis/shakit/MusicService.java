@@ -189,7 +189,6 @@ public class MusicService extends Service{
 			songTitles = extras.getStringArray(TITLE_ARRAY);
 			int songNumber = extras.getInt("number");
 			nowPlaying = songNumber;
-			playSong(songNumber);
 		}
 		//create the notification default
 		buildNotification("default");
