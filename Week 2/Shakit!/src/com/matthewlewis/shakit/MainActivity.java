@@ -146,7 +146,7 @@ public class MainActivity extends Activity implements SensorEventListener{
 				if (currentImage.getConstantState().equals(getResources().getDrawable(R.drawable.play).getConstantState())) {
 					//the button was "play" so set to pause and start music playback
 					mService.playSong(playingInt);
-					mService.buildNotification("default");
+					mService.buildNotification("play/pause");
 					playPause.setImageResource(R.drawable.pause);
 				} else {
 					//the button was "pause" so set to play and pause current playback

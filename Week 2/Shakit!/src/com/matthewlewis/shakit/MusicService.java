@@ -77,9 +77,10 @@ public class MusicService extends Service{
 			if (intent.getAction().equals("Pause")) {
 				//if music player is currently playing, pause it, otherwise resume playback
 				if (musicPlayer.isPlaying()) {					
-					stopMusic();					
+					stopMusic();	
+					isPaused = true;
 				} else {
-					musicPlayer.start();
+					resumeMusic();
 					isPaused = false;
 				}
 				notificationIntent.putExtra("notificationAction", "Pause");
@@ -96,7 +97,8 @@ public class MusicService extends Service{
 					notificationIntent.putExtra("notificationAction", "Pause");
 					musicPlayer.stop();
 					musicPlayer.reset();
-					musicPlayer.release();
+					
+					notification = null;
 					this.stopSelf();
 				}
 
@@ -167,6 +169,9 @@ public class MusicService extends Service{
 		//set up our global music player instance
 		musicPlayer = new MediaPlayer();
 		
+		//set paused boolean to true by default
+		isPaused = true;
+		
 		//set up an onCompletionListener so we know when it finishes and can reset our notification
 		musicPlayer.setOnCompletionListener(new OnCompletionListener() {
 
@@ -190,9 +195,29 @@ public class MusicService extends Service{
 			int songNumber = extras.getInt("number");
 			nowPlaying = songNumber;
 		}
-		//create the notification default
+
+		// set the default data source for mediaplayer, just in case the user
+		// wants to start playback from notification
+		Uri defaultSong = Uri.parse(songPaths[0]);
+		try {
+			musicPlayer.setDataSource(getApplicationContext(), defaultSong);
+		} catch (IllegalArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SecurityException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalStateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		// create the notification default
 		buildNotification("default");
-	
+
 		return serviceBinder;
 	}
 
@@ -208,6 +233,8 @@ public class MusicService extends Service{
 		//if we already had a musis player, reset it in preperation for playing a new clip
 		if (musicPlayer != null) {
 			musicPlayer.reset();
+		} else {
+			musicPlayer = new MediaPlayer();
 		}
         
 		//parse the uri string into a URI
@@ -239,7 +266,7 @@ public class MusicService extends Service{
 		//only pause if we have been running for a certain amount of time
 		//this keeps the proximity sensor "mute" function from running immediately at startup
 		if (currentTime - startTime > 1000) {
-			if (musicPlayer != null) {
+			if (musicPlayer != null && notification != null) {
 				musicPlayer.pause();
 				isPaused = true;
 			} else {
@@ -250,10 +277,23 @@ public class MusicService extends Service{
 	
 	//this function simply resumes music playback
 	public void resumeMusic() {
+		System.out.println("track is:  " + nowPlaying);
 		//check to make sure musicplayer is valid
-		if (musicPlayer != null) {
+		if (musicPlayer != null && nowPlaying != null ) {
+			try {
+				musicPlayer.prepare();
+			} catch (IllegalStateException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			musicPlayer.start();
 			isPaused = false;
+		} else {
+			nowPlaying = 0;
+			playSong(0);
 		}
 	}
 
@@ -313,7 +353,7 @@ public class MusicService extends Service{
 				
 			}
 		} else if (type.equals("default")) {
-			notificationBuilder.addAction(R.drawable.pause_small, "", pausePending);			
+			notificationBuilder.addAction(R.drawable.play_small, "", pausePending);			
 		}
 		
 		//add this one last since builder puts icons in order they were added	
