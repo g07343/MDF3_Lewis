@@ -1,28 +1,31 @@
+/*
+ * Author Matthew Lewis
+ * 
+ * Project Shakit!
+ * 
+ * Package com.matthewlewis.shakit
+ * 
+ * File MusicService.java
+ * 
+ * Purpose MusicService is basically in charge of music playback and keeping a notification up to date within the notification pane.  
+ * It communicates back and forth with MainActivity to keep information updated, so the user can control playback from the notification,
+ * or from within the app.
+ * 
+ */
 package com.matthewlewis.shakit;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Timer;
-import java.util.TimerTask;
-
-import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.provider.MediaStore;
 import android.util.Log;
 
 public class MusicService extends Service{
@@ -40,7 +43,6 @@ public class MusicService extends Service{
 	
 	Notification notification;
 	NotificationManager nm;
-	BroadcastReceiver pauseReceiver;
 	long startTime;
 	Integer nowPlaying;
 	String[] songPaths;
@@ -61,56 +63,37 @@ public class MusicService extends Service{
 		// TODO Auto-generated constructor stub
 	} 
 
-
-
-	
-
-
+	//this method receives actions from anything the user does with our notification, and responds to keep
+	//MusicService updated, as well as communicating to MainActivity to keep our interface updated as well.
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		// TODO Auto-generated method stub
+
+		//create an intent for our notification broadcast, which communicates to MainActivity
+		Intent notificationIntent = new Intent("com.matthewlewis.shakit.NotificationReceiver");
+
+		//the below logic checks what action was sent via the intent and then updates the Service accordingly
 		if (musicPlayer != null) {
 			if (intent.getAction().equals("Pause")) {
-
-				if (musicPlayer.isPlaying()) {
-					System.out.println("Pause fired from passed intent");
-					stopMusic();
-
+				//if music player is currently playing, pause it, otherwise resume playback
+				if (musicPlayer.isPlaying()) {					
+					stopMusic();					
 				} else {
 					musicPlayer.start();
 					isPaused = false;
 				}
+				notificationIntent.putExtra("notificationAction", "Pause");
 				buildNotification("play/pause");
 
 			} else if (intent.getAction().equals("Next")) {
-				int numSongs = songPaths.length -1;
-				int nextSong = nowPlaying +1;
-				
-				System.out.println("NEXT Array length total is:  " + numSongs);
-				System.out.println("NEXT Song should be:  " + nextSong);
-				
-				if (nextSong > numSongs) {
-					nextSong = 0;
-					playSong(nextSong);
-				} else  {
-					playSong(nextSong);
-				}
-				buildNotification("default");
+				nextSong();
+				notificationIntent.putExtra("playing", nowPlaying);
 			} else if (intent.getAction().equals("Previous")) {
-				int numSongs = songPaths.length -1;
-				int prevSong = nowPlaying -1;
-				System.out.println("PREV Array length total is:  " + numSongs);
-				System.out.println("PREV Song should be:  " + prevSong);
-				
-				if (prevSong <= -1) {
-					prevSong = songPaths.length -1;
-					playSong(prevSong);
-				} else {
-					playSong(prevSong);
-				}
-				buildNotification("default");
+				previousSong();
+				notificationIntent.putExtra("playing", nowPlaying);
 			} else if (intent.getAction().equals("Stop")) {
 				if (musicPlayer != null) {
+					notificationIntent.putExtra("notificationAction", "Pause");
 					musicPlayer.stop();
 					musicPlayer.reset();
 					musicPlayer.release();
@@ -121,28 +104,53 @@ public class MusicService extends Service{
 		} else { 
 			//buildNotification("destroy");
 		}
-		
-		
+		//send our broadcast to MainActivity to let it know what was done
+		sendBroadcast(notificationIntent);
 		return super.onStartCommand(intent, flags, startId);
 	}
 
+	//this function skips to the next song in our array after checking to make sure we
+	//are within the bounds of our array
+	public void nextSong () {
+		int numSongs = songPaths.length -1;
+		int nextSong = nowPlaying +1;
+		
+		System.out.println("NEXT Array length total is:  " + numSongs);
+		System.out.println("NEXT Song should be:  " + nextSong);
+		
+		if (nextSong > numSongs) {
+			nextSong = 0;
+			playSong(nextSong);
+		} else  {
+			playSong(nextSong);
+		}
+		buildNotification("default");
+	}
 
+	//this function goes to the previous song in our array after checking to make sure we
+		//are within the bounds of our array
+	public void previousSong() {
+		int numSongs = songPaths.length -1;
+		int prevSong = nowPlaying -1;
+		System.out.println("PREV Array length total is:  " + numSongs);
+		System.out.println("PREV Song should be:  " + prevSong);
+		
+		if (prevSong <= -1) {
+			prevSong = songPaths.length -1;
+			playSong(prevSong);
+		} else {
+			playSong(prevSong);
+		}
+		buildNotification("default");
+	}
+	
+	//this function recreates our array if it was destroyed somehow
 	public void restoreNotification(Notification notification) {
 		NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		nm.notify(TXT_NOTIFICATION_ID, notification);
 	}
 
-	
-	
-	
-
-	
-
-
-
-
-
-
+	//this function is what binds our service to MainActivity
 	@Override
 	public IBinder onBind(Intent intent) {
 		// TODO Auto-generated method stub
@@ -155,50 +163,6 @@ public class MusicService extends Service{
 		
 		//set up toggle boolean to give broadcast more time to be set
 		timerToggle = false;
-		
-		//set up a timer to constantly check if our MainActivity is still alive
-		//this is the only way I can think of to ensure we get rid of our notification in the event MainActivity is destroyed
-		Timer aliveTimer = new Timer();
-		TimerTask timerTask = new TimerTask() {
-
-			
-			
-			@Override
-			public void run() {
-				
-				SharedPreferences prefs = getSharedPreferences("com.matthewlewis.shakit", Context.MODE_PRIVATE);
-				
-				if (timerToggle == true) {
-					prefs.edit().putBoolean("isAlive", false).apply();
-					timerToggle = false;
-				} else {
-					if (prefs.contains("isAlive")) {
-						
-						//boolean isAlive = MainActivity.class.isActive;
-						Intent isAlive = new Intent("com.matthewlewis.shakit.PauseReceiver");
-						sendBroadcast(isAlive);
-						
-						boolean isRunning = prefs.getBoolean("isAlive", false);
-						
-						if (isRunning == false) {
-							buildNotification("destroy");
-							System.out.println("MainActivity was killed!");
-						} else {
-							System.out.println("MainActivity is alive...");
-							if (notification == null) {
-								buildNotification("default");
-							}
-						}
-					}
-					
-					
-				}
-				
-			}
-			
-		};
-		aliveTimer.scheduleAtFixedRate(timerTask, 3000, 3000);
-		
 		
 		//set up our global music player instance
 		musicPlayer = new MediaPlayer();
@@ -214,11 +178,10 @@ public class MusicService extends Service{
 			}
 			
 		});
-		
+		//grab the current time so we don't accidentally turn off the sound at launch 
+		//(for some reason, the app's onPause fires when it is first launched"
 		startTime = System.currentTimeMillis();
 
-		
-		
 		// grab our extras data
 		Bundle extras = intent.getExtras();
 		if (intent.hasExtra(URI_ARRAY)) {
@@ -228,36 +191,36 @@ public class MusicService extends Service{
 			nowPlaying = songNumber;
 			playSong(songNumber);
 		}
-		
+		//create the notification default
 		buildNotification("default");
 	
 		return serviceBinder;
 	}
 
-	public TimerTask checkApp () {
-		
-		return null;
-	}
-	
-
-
+	//this function is what handles sound playback based on an integer passed
 	public void playSong(int songPlace) {
+		
+		//grab the location of the file in reference to the int passed
 		String testSongLocation = songPaths[songPlace];
+		
+		//set our global int to match what was passed
 		nowPlaying = songPlace;
+		
+		//if we already had a musis player, reset it in preperation for playing a new clip
 		if (musicPlayer != null) {
 			musicPlayer.reset();
 		}
         
+		//parse the uri string into a URI
         Uri currentLocation = Uri.parse(testSongLocation);
-        try{               	
+        try{
+        	//attempt to set the player's data source and play
         	musicPlayer.setDataSource(getApplicationContext(), currentLocation);
         	musicPlayer.prepare();
         	musicPlayer.start();
         	
         } catch (IOException e) {
         	System.out.println("Catch block triggered...");
-        	
-        	//for some reason, couldn't get the duration, so set to unknown for checking later
         	
         }
         //make sure the music player successfully loaded and began playing from file
@@ -266,13 +229,16 @@ public class MusicService extends Service{
         	//outside app interface
         	
         }
+        //set our playing boolean to false, since musicPlayer is now playing
         isPaused = false;
 	}
 	
+	//this function handles stopping the playback of music
 	public void stopMusic() {
 		long currentTime = System.currentTimeMillis();
-		System.out.println("Started was:  " + startTime + "  Current is:  " + currentTime);
 		
+		//only pause if we have been running for a certain amount of time
+		//this keeps the proximity sensor "mute" function from running immediately at startup
 		if (currentTime - startTime > 1000) {
 			if (musicPlayer != null) {
 				musicPlayer.pause();
@@ -283,48 +249,18 @@ public class MusicService extends Service{
 		}		
 	}
 	
+	//this function simply resumes music playback
 	public void resumeMusic() {
+		//check to make sure musicplayer is valid
 		if (musicPlayer != null) {
 			musicPlayer.start();
 			isPaused = false;
 		}
 	}
 
-	public Integer getSavedSpot() {
-		SharedPreferences prefs = this.getSharedPreferences("com.matthewlewis.shakit", Context.MODE_PRIVATE);
-		if (prefs.contains("song")) {
-			nowPlaying = prefs.getInt("song", 0);
-		}
-		
-		if (prefs.contains("currentPosition")) {
-			Integer savedSpot = prefs.getInt("currentPosition", (Integer) null);
-			return savedSpot;
-		} else {
-			return null;
-		}
-	}
-	
-	
-	public void checkPlayer() {
-		if (musicPlayer == null) {
-			
-		} 
-	}
-	
-	//we use this receiver to be informed of when the user taps the "pause" button from the notification.
-	//While MusicService pauses itself, we need to update the notification to use a "play" button if paused, and vice versa
-	public static class PauseReceiver extends BroadcastReceiver {
-
-		@Override
-		public void onReceive(Context arg0, Intent arg1) {
-			// TODO Auto-generated method stub
-			System.out.println("onReceive");
-			
-		}
-		
-	}
-	
-public void buildNotification (String type) {
+	//this function serves to create and constantly update our notification when the user interacts with the app's interface,
+	//or the old notification instance itself
+	public void buildNotification (String type) {
 		nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		
 		if (songTitles != null) {
@@ -343,38 +279,24 @@ public void buildNotification (String type) {
     	Intent basicPrevious = new Intent(this, MusicService.class);
     	basicPrevious.setAction("Previous");
     	
-    	//basic intent for when the user clicks the notification itself, which we want to open MainActivity
-    	Intent basicOpen = new Intent(this, MainActivity.class);
-    	
     	//create an intent to close out the notification and stop music playback
     	Intent basicClose = new Intent(this, MusicService.class);
     	basicClose.setAction("Stop");
     	
-    	//create three different pending intents to apply to our control buttons
+    	//create different pending intents to apply to our control buttons
     	PendingIntent pausePending = PendingIntent.getService(this, 0, basicPause, 0);
     	PendingIntent nextPending = PendingIntent.getService(this, 0, basicNext, 0);
     	PendingIntent previousPending = PendingIntent.getService(this, 0, basicPrevious, 0);
-    	//PendingIntent openActivityPending = PendingIntent.getActivity(this, 0, basicOpen, 0);
     	PendingIntent closePending = PendingIntent.getService(this, 0, basicClose, 0);
     	
     	if (notification == null) {
     		notification = new Notification();
     	}
     	
-    	
+    	//create a notification builder
     	Notification.Builder notificationBuilder = new Notification.Builder(this);
-    	notificationBuilder.setSmallIcon(R.drawable.ic_launcher);
-    	notificationBuilder.setContentTitle(songTitles[nowPlaying]);
-    	//notificationBuilder.setOngoing(true);
-    	
-    	//need to create an intent for below that will "relaunch" MainActivity
-    	//notificationBuilder.setContentIntent(pIntent);
-    	
-    	
-    	
-		
-		
-		
+    	notificationBuilder.setSmallIcon(R.drawable.app_icon);
+    	notificationBuilder.setContentTitle(songTitles[nowPlaying]);		
     	notificationBuilder.addAction(R.drawable.back_small, "", previousPending);
 		
 		
@@ -392,12 +314,10 @@ public void buildNotification (String type) {
 				
 			}
 		} else if (type.equals("default")) {
-			notificationBuilder.addAction(R.drawable.pause_small, "", pausePending);
-			
+			notificationBuilder.addAction(R.drawable.pause_small, "", pausePending);			
 		}
 		
-		
-    	
+		//add this one last since builder puts icons in order they were added	
     	notificationBuilder.addAction(R.drawable.next_small, "", nextPending);
     	
     	//notificationBuilder.setContentIntent(openActivityPending);
@@ -405,11 +325,6 @@ public void buildNotification (String type) {
     	notification = notificationBuilder.build();  
     	if (!(type.equals("destroy"))) {
     		nm.notify(TXT_NOTIFICATION_ID, notification);
-    	}
-    	
-		
-    	
-    	
-    	
+    	}    	
 	}
 }

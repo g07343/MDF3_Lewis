@@ -1,15 +1,22 @@
+/*
+ * Author Matthew Lewis
+ * 
+ * Project Shakit!
+ * 
+ * Package com.matthewlewis.shakit
+ * 
+ * File MainActivity.java
+ * 
+ * Purpose MainActivity is responsible for displaying the playing tracks to the user and giving them controls to pause, play, advance to next
+ * track, and return to the previous track.  It communicates back and forth with the MusicService service to maintain an updated notification within
+ * the notification pane.
+ * 
+ */
 package com.matthewlewis.shakit;
 
 import java.io.IOException;
-import java.lang.ref.WeakReference;
-
 import com.matthewlewis.shakit.MusicService.LocalBinder;
-import com.matthewlewis.shakit.MusicService.PauseReceiver;
-
 import android.app.Activity;
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -19,6 +26,7 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
+import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -28,11 +36,13 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 
@@ -41,8 +51,6 @@ public class MainActivity extends Activity implements SensorEventListener{
 	private SensorManager sensorManager;
 	private Sensor accelerometerSensor;
 	private Sensor proximitySensor;
-	private Sensor linearAcceleration;
-	private final int TXT_NOTIFICATION_ID = 1;
 	String[] songTitles;
 	String[] songPaths;
 	String[] songLengths;
@@ -58,7 +66,14 @@ public class MainActivity extends Activity implements SensorEventListener{
 	boolean mBound = false;
 	boolean isActive;
 	PauseReceiver pauseReceiver;
-	
+	NotificationReceiver notificationReceiver;
+	TextView nextTrack;
+	TextView previousTrack;
+	TextView currentlyPlaying;
+	ImageButton playPause;
+	ImageButton next;
+	ImageButton previous;
+	int playingInt;
 	
 	
     @Override
@@ -71,12 +86,23 @@ public class MainActivity extends Activity implements SensorEventListener{
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         
         
+        setContentView(R.layout.activity_main);
+        
+        //set up our text views
+        nextTrack = (TextView) findViewById(R.id.nextTrack);
+        previousTrack = (TextView) findViewById(R.id.previousTrack);
+        currentlyPlaying = (TextView) findViewById(R.id.currentPlaying);
+        
+        //grab our buttons
+        playPause = (ImageButton) findViewById(R.id.playPause_btn);
+        next = (ImageButton) findViewById(R.id.next_btn);
+        previous = (ImageButton) findViewById(R.id.previous_btn);
         
         
         
         isActive = true;
         
-        setContentView(R.layout.activity_main);
+        
         
         //grab global context variable
         context = this;       
@@ -85,27 +111,23 @@ public class MainActivity extends Activity implements SensorEventListener{
         //grab all of the audio on the device, so we can set up our interface
         getAllAudio();
         
-        //get ready to start our service to handle music playback
-        MusicService musicService = new MusicService();
+      
         
         
-        //create an intent to send to the service
-        //Intent startMusicService = new Intent(context, musicService.getClass());       
+        //set up interface to display music found
+        setSongDetails(0);
         
-        //add our list of file locations to the service via intent
-        //startMusicService.putExtra(MusicService.URI_ARRAY, songPaths);
-        
-        //add list of titles to the intent as well
-        //startMusicService.putExtra(MusicService.TITLE_ARRAY, songTitles);
         
         pauseReceiver = new PauseReceiver();
-        this.registerReceiver(new PauseReceiver(), new IntentFilter("com.matthewlewis.shakit.PauseReceiver"));
+        this.registerReceiver(pauseReceiver, new IntentFilter("com.matthewlewis.shakit.PauseReceiver"));
+        
+        notificationReceiver = new NotificationReceiver();
+        this.registerReceiver(notificationReceiver, new IntentFilter("com.matthewlewis.shakit.NotificationReceiver"));
         
         //get access to our sensor manager/sensors
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         proximitySensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
         accelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        linearAcceleration = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
         
         //check to ensure the user's device has the above sensors
         if (proximitySensor == null) {
@@ -121,15 +143,86 @@ public class MainActivity extends Activity implements SensorEventListener{
         	//register listener to capture data from this sensor
         	sensorManager.registerListener(this, accelerometerSensor, SensorManager.SENSOR_DELAY_NORMAL);
         }
-        
-        if (linearAcceleration == null) {
-        	System.out.println("No linear acceleration sensor detected!");
-        } else {
-        	sensorManager.registerListener(this, linearAcceleration, SensorManager.SENSOR_DELAY_NORMAL);
-        }
+        //set an onclick listener for our play/pause button
+        playPause.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				// TODO Auto-generated method stub
+				Drawable currentImage = playPause.getDrawable();
+				
+				if (currentImage.getConstantState().equals(getResources().getDrawable(R.drawable.play).getConstantState())) {
+					//the button was "play" so set to pause and start music playback
+					mService.playSong(playingInt);
+					mService.buildNotification("default");
+					playPause.setImageResource(R.drawable.pause);
+				} else {
+					//the button was "pause" so set to play and pause current playback
+					mService.stopMusic();
+					mService.buildNotification("play/pause");
+					playPause.setImageResource(R.drawable.play);
+				}
+				
+				
+			}
+        	
+        });
+        //set onclicklistener for our next button
+        next.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				playingInt ++;
+				mService.nextSong();
+				setSongDetails(playingInt);
+			}
+        	
+        }); 
+        //set onclicklistener for our previous button
+        previous.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				playingInt --;
+				mService.previousSong();
+				setSongDetails(playingInt);
+			}
+        	
+        }); 
     }
 
-
+    
+    //this function keeps our app's interface data updated according to which song is playing
+    public void setSongDetails (int songNumber) {
+    	System.out.println("Song details called!");
+    	int arraySync = songTitles.length -1;
+    	playingInt = songNumber;
+    	
+    	if (songNumber <= -1) {
+    		songNumber = songTitles.length -1;
+    		playingInt = songNumber;
+    	} else if (songNumber > arraySync) {
+    		playingInt = 0;
+    	}
+     	
+    	int previousSong = playingInt -1;
+    	int nextSong = playingInt +1;
+    	    	
+    	if (previousSong <= -1) {
+    		previousSong = songTitles.length -1;
+    	}
+    	
+    	if (nextSong == songTitles.length) {
+    		nextSong = 0;
+    	}
+    	currentlyPlaying.setText(songTitles[playingInt]);
+    	previousTrack.setText(songTitles[previousSong]);
+    	nextTrack.setText(songTitles[nextSong]);
+    System.out.println();	
+    }
+    
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -225,9 +318,10 @@ public class MainActivity extends Activity implements SensorEventListener{
 				System.out.println("User has covered proximity sensor!");
 				if (mBound && mService != null) {
 					mService.stopMusic();
+					mService.buildNotification("play/pause");
 				}
 			}
-			
+			//the below code attempts to detect when the user quickly turn the phone left and right and will skip/or go back the current track
 		} else if (event.sensor == accelerometerSensor) {
 			long currentTime = System.currentTimeMillis();
 			int threshHold = 9000000;
@@ -279,12 +373,7 @@ public class MainActivity extends Activity implements SensorEventListener{
 				
 			
 			
-		} else if (event.sensor == linearAcceleration) {
-			//System.out.println("Acceleration sensor updated!");
-			
-			float xValue = event.values[0];
-			//System.out.println("Linear accel value of X is:  " + xValue);
-		}
+		} 
 	}
 	
 	//this method changes the selected audio clip depending upon which "direction" string it is passed.  
@@ -330,7 +419,7 @@ public class MainActivity extends Activity implements SensorEventListener{
         sensorManager.registerListener(this, proximitySensor, SensorManager.SENSOR_DELAY_NORMAL);
         sensorManager.registerListener(this, accelerometerSensor, SensorManager.SENSOR_DELAY_NORMAL);
         if (mService != null) {
-        	System.out.println("Service is not null");
+        	
         	Intent startMusicService = new Intent(context, musicService.getClass());
         	context.bindService(startMusicService, mConnection, 0);
         	if (mService.notification == null) {
@@ -424,12 +513,42 @@ public class MainActivity extends Activity implements SensorEventListener{
 		public static class PauseReceiver extends BroadcastReceiver {
 
 			@Override
-			public void onReceive(Context context, Intent arg1) {
+			public void onReceive(Context context, Intent intent) {
 				// TODO Auto-generated method stub
 				System.out.println("onReceive");
 				SharedPreferences prefs = context.getSharedPreferences("com.matthewlewis.shakit", Context.MODE_PRIVATE);
 				prefs.edit().putBoolean("isAlive", true).apply();
 				
+			}
+			
+		}
+		
+		public void updatePlayBtn () {
+			Drawable current = playPause.getDrawable();
+			if (current.getConstantState().equals(getResources().getDrawable(R.drawable.play).getConstantState())) {
+				playPause.setImageResource(R.drawable.pause);
+			} else {
+				playPause.setImageResource(R.drawable.play);
+			}
+		}
+		
+		//we use this to receive information from MusicClass as to when and how the user interacts with the notification
+		public static class NotificationReceiver extends BroadcastReceiver {
+
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				MainActivity main = ((MainActivity)context);
+				// TODO Auto-generated method stub
+				System.out.println("NOTIFICATION RECEIVER");
+				Bundle extras = intent.getExtras();
+				if (extras.containsKey("playing")) {
+					//check passed string so we know what the user did
+					int newSong = extras.getInt("playing");
+					
+					main.setSongDetails(newSong);
+				} else if (extras.containsKey("notificationAction")) {
+					main.updatePlayBtn();
+				}
 			}
 			
 		}
