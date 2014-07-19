@@ -13,4 +13,5 @@
 	<string name="playPause_btn_desc">Play/Pause Button</string>
 	<string name="next_btn_desc">Next Button</string>
 	<string name="previous_btn_desc">Previous Button</string>
+	<string name="pause_hint">Cover the phone to pause music!</string>
 </resources>

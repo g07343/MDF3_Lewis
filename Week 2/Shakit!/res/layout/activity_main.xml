@@ -11,7 +11,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="80dp"
-        android:text="Cover the phone to pause music!"
+        android:text="@string/pause_hint"
         android:textColor="#FFFFFF" />
 
     <TextView

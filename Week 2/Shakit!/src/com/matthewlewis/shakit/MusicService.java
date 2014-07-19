@@ -19,7 +19,10 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.net.Uri;
@@ -47,7 +50,7 @@ public class MusicService extends Service{
 	Integer nowPlaying;
 	String[] songPaths;
 	String[] songTitles;
-	static MediaPlayer musicPlayer;
+	MediaPlayer musicPlayer;
 	boolean isPaused;
 	boolean activityAlive;
 	boolean timerToggle;
@@ -88,9 +91,11 @@ public class MusicService extends Service{
 
 			} else if (intent.getAction().equals("Next")) {
 				nextSong();
+				buildNotification("play/pause");
 				notificationIntent.putExtra("playing", nowPlaying);
 			} else if (intent.getAction().equals("Previous")) {
 				previousSong();
+				buildNotification("play/pause");
 				notificationIntent.putExtra("playing", nowPlaying);
 			} else if (intent.getAction().equals("Stop")) {
 				if (musicPlayer != null) {
@@ -126,7 +131,6 @@ public class MusicService extends Service{
 		} else  {
 			playSong(nextSong);
 		}
-		buildNotification("default");
 	}
 
 	//this function goes to the previous song in our array after checking to make sure we
@@ -143,7 +147,6 @@ public class MusicService extends Service{
 		} else {
 			playSong(prevSong);
 		}
-		buildNotification("default");
 	}
 	
 	//this function recreates our array if it was destroyed somehow
@@ -180,6 +183,9 @@ public class MusicService extends Service{
 				// TODO Auto-generated method stub
 				isPaused = true;
 				buildNotification("play/pause");
+				Intent notificationIntent = new Intent("com.matthewlewis.shakit.NotificationReceiver");
+				notificationIntent.putExtra("notificationAction", "Pause");
+				sendBroadcast(notificationIntent);
 			}
 			
 		});
@@ -223,7 +229,19 @@ public class MusicService extends Service{
 
 	//this function is what handles sound playback based on an integer passed
 	public void playSong(int songPlace) {
-		
+		//in rare almost random cases, our data is lost when user leaves MainActivity, so grab it from shared preferences
+		if (songPaths == null) {
+			SharedPreferences prefs = getApplicationContext().getSharedPreferences("com.matthewlewis.shakit", Context.MODE_PRIVATE);
+	        
+			try {
+				int numSongs = prefs.getInt("numSongs", 0);
+				songPaths = (String[]) ObjectSerializer.deserialize(prefs.getString("songPaths", ObjectSerializer.serialize(new String[numSongs])));
+				songTitles = (String[]) ObjectSerializer.deserialize(prefs.getString("songTitles", ObjectSerializer.serialize(new String[numSongs])));
+				System.out.println("Data retrieved from shared preferences successfully!");
+			} catch (IOException e) {
+				e.printStackTrace();
+			} 
+		}
 		//grab the location of the file in reference to the int passed
 		String testSongLocation = songPaths[songPlace];
 		
