@@ -22,7 +22,6 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.net.Uri;
@@ -91,6 +90,7 @@ public class MusicService extends Service{
 
 			} else if (intent.getAction().equals("Next")) {
 				nextSong();
+				System.out.println("NEXT");
 				buildNotification("play/pause");
 				notificationIntent.putExtra("playing", nowPlaying);
 			} else if (intent.getAction().equals("Previous")) {
@@ -99,9 +99,11 @@ public class MusicService extends Service{
 				notificationIntent.putExtra("playing", nowPlaying);
 			} else if (intent.getAction().equals("Stop")) {
 				if (musicPlayer != null) {
-					notificationIntent.putExtra("notificationAction", "Pause");
-					musicPlayer.stop();
-					musicPlayer.reset();
+					if (musicPlayer.isPlaying()) {
+						notificationIntent.putExtra("notificationAction", "Pause");
+						musicPlayer.stop();
+					}
+					
 					
 					notification = null;
 					this.stopSelf();
@@ -247,6 +249,7 @@ public class MusicService extends Service{
 		
 		//set our global int to match what was passed
 		nowPlaying = songPlace;
+		System.out.println("NOW PLAYING IS:  " + nowPlaying);
 		
 		//if we already had a musis player, reset it in preperation for playing a new clip
 		if (musicPlayer != null) {

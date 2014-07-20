@@ -6,4 +6,8 @@
     <item type="id" name="currentPlaying" />
     <item type="id" name="nextTrack" />
     <item type="id" name="previousTrack" />
+    <item type="id" name="playPauseView" />
+    <item type="id" name="previousView" />
+    <item type="id" name="nextView" />
+    <item type="id" name="songCounter" />
 </resources>
