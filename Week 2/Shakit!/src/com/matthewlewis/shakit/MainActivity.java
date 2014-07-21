@@ -464,24 +464,6 @@ public class MainActivity extends Activity implements SensorEventListener {
 					next.performClick();
 				}
 
-				float calcFloat = (float) Math.pow(10, 4);
-				x = x * calcFloat;
-				float temp = Math.round(x);
-
-				// System.out.println("Temp was:  " + temp);
-
-				if (speed > threshHold && temp > 10.0000) {
-					// System.out.println("LEFT");
-					sensorManager.unregisterListener(this, accelerometerSensor);
-					changeTrack("back");
-
-				} else if (speed > threshHold && temp < -10.0000) {
-					// System.out.println("RIGHT");
-					sensorManager.unregisterListener(this, accelerometerSensor);
-					changeTrack("forward");
-
-				}
-
 				last_x = x;
 				last_y = y;
 				last_z = z;
