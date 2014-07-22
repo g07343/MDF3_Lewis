@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android" 
+    android:minWidth="180dp"
+    android:minHeight="40dp"
+    android:updatePeriodMillis="10800000"
+     android:initialLayout="@layout/widget_layout"
+     android:resizeMode="horizontal"
+     android:widgetCategory="home_screen"
+     android:initialKeyguardLayout="@layout/widget_layout"
+     
+     android:previewImage="@drawable/app_icon">
+    <!-- android:previewImage="" -->
+   <!-- android:configure="com.matthewlewis.WidgetConfigActivity" -->
+
+</appwidget-provider>

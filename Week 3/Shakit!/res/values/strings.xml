@@ -15,4 +15,5 @@
 	<string name="previous_btn_desc">Previous Button</string>
 	<string name="pause_hint">Cover the phone to pause music!</string>
 	<string name="songCounter_label">Song counter</string>
+	<string name="widget_songLabel">Song Title</string>
 </resources>
