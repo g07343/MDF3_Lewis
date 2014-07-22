@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Shakit!</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+	<string name="nowPlaying_label">Now Playing: </string>
+	<string name="previous_label">Previous:</string>
+	<string name="next_label">Next:</string>
+	<string name="currentPlaying_label">Current Label</string>
+	<string name="nextPlaying_label">Next Label</string>
+	<string name="previousPlaying_label">Previous Label</string>
+	<string name="playPause_btn_desc">Play/Pause Button</string>
+	<string name="next_btn_desc">Next Button</string>
+	<string name="previous_btn_desc">Previous Button</string>
+	<string name="pause_hint">Cover the phone to pause music!</string>
+	<string name="songCounter_label">Song counter</string>
+</resources>
