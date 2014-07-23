@@ -19,6 +19,8 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -73,7 +75,21 @@ public class MusicService extends Service{
 		System.out.println("onStartCommand runs!");
 		//create an intent for our notification broadcast, which communicates to MainActivity
 		Intent notificationIntent = new Intent("com.matthewlewis.shakit.NotificationReceiver");
-		Intent widgetNotificationIntent = new Intent("android.appwidget.action.APPWIDGET_UPDATE");
+		
+		//grab widgetManager so we can be sure to keep our widget in sync with the notification
+		AppWidgetManager widgetManager = AppWidgetManager.getInstance(this);
+		
+		//grab MusicWidgetProvider 
+		ComponentName widgetProvider = new ComponentName(getApplicationContext(), MusicWidgetProvider.class);
+		
+		//grab the array of widgetIds associated with our app to update them since the user changed our notification
+		int[] widgetIds = widgetManager.getAppWidgetIds(widgetProvider);
+		
+		
+		Intent updateWidget = new Intent(this, MusicWidgetProvider.class);
+		updateWidget.setAction("android.appwidget.action.APPWIDGET_APDATE");
+		updateWidget.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, widgetIds);
+		sendBroadcast(updateWidget);
 		
 		//the below logic checks what action was sent via the intent and then updates the Service accordingly
 		if (musicPlayer != null) {
@@ -87,7 +103,6 @@ public class MusicService extends Service{
 					isPaused = false;
 				}
 				notificationIntent.putExtra("notificationAction", "Pause");
-				widgetNotificationIntent.putExtra("notificationAction", "Pause");
 				buildNotification("play/pause");
 
 			} else if (intent.getAction().equals("Next")) {
@@ -95,17 +110,14 @@ public class MusicService extends Service{
 				System.out.println("NEXT");
 				buildNotification("play/pause");
 				notificationIntent.putExtra("playing", nowPlaying);
-				widgetNotificationIntent.putExtra("playing", nowPlaying);
 			} else if (intent.getAction().equals("Previous")) {
 				previousSong();
 				buildNotification("play/pause");
 				notificationIntent.putExtra("playing", nowPlaying);
-				widgetNotificationIntent.putExtra("playing", nowPlaying);
 			} else if (intent.getAction().equals("Stop")) {
 				if (musicPlayer != null) {
 					if (musicPlayer.isPlaying()) {
 						notificationIntent.putExtra("notificationAction", "Pause");
-						widgetNotificationIntent.putExtra("notificationAction", "Pause");
 						musicPlayer.stop();
 					}
 					
@@ -124,7 +136,6 @@ public class MusicService extends Service{
 		}
 		//send our broadcast to MainActivity to let it know what was done
 		sendBroadcast(notificationIntent);
-		sendBroadcast(widgetNotificationIntent);
 		return super.onStartCommand(intent, flags, startId);
 	}
 
@@ -199,9 +210,26 @@ public class MusicService extends Service{
 				Intent notificationIntent = new Intent("com.matthewlewis.shakit.NotificationReceiver");
 				notificationIntent.putExtra("notificationAction", "Pause");
 				sendBroadcast(notificationIntent);
-			}
-			
+				
+				//everything below is used to update our widget to match our notification (and MusicService status)
+				
+				//grab widgetManager so we can be sure to keep our widget in sync with the notification
+				AppWidgetManager widgetManager = AppWidgetManager.getInstance(getApplicationContext());
+				
+				//grab MusicWidgetProvider 
+				ComponentName widgetProvider = new ComponentName(getApplicationContext(), MusicWidgetProvider.class);
+				
+				//grab the array of widgetIds associated with our app to update them since the user changed our notification
+				int[] widgetIds = widgetManager.getAppWidgetIds(widgetProvider);
+				
+				//make sure to update our widget when a song stops playing
+				Intent updateWidget = new Intent(getApplicationContext(), MusicWidgetProvider.class);
+				updateWidget.setAction("android.appwidget.action.APPWIDGET_APDATE");
+				updateWidget.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, widgetIds);
+				sendBroadcast(updateWidget);
+			}		
 		});
+		
 		//grab the current time so we don't accidentally turn off the sound at launch 
 		//(for some reason, the app's onPause fires when it is first launched"
 		startTime = System.currentTimeMillis();
@@ -234,6 +262,21 @@ public class MusicService extends Service{
 			e.printStackTrace();
 		}
 
+		//grab widgetManager so we can be sure to keep our widget in sync with the notification
+		AppWidgetManager widgetManager = AppWidgetManager.getInstance(this);
+				
+		//grab MusicWidgetProvider 
+		ComponentName widgetProvider = new ComponentName(getApplicationContext(), MusicWidgetProvider.class);
+				
+		//grab the array of widgetIds associated with our app to update them since the user changed our notification
+		int[] widgetIds = widgetManager.getAppWidgetIds(widgetProvider);
+				
+				
+		Intent updateWidget = new Intent(this, MusicWidgetProvider.class);
+		updateWidget.setAction("android.appwidget.action.APPWIDGET_APDATE");
+		updateWidget.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, widgetIds);
+		sendBroadcast(updateWidget);
+		
 		// create the notification default
 		buildNotification("default");
 

@@ -15,7 +15,7 @@
 	<string name="previous_btn_desc">Previous Button</string>
 	<string name="pause_hint">Cover the phone to pause music!</string>
 	<string name="songCounter_label">Song counter</string>
-	<string name="widget_songLabel">Scanning Media..</string>
+	<string name="widget_songLabel">Tap to start Shakit!</string>
 	<string name="widget_speaker_desc">Speaker Background</string>
 	<string name="widget_play_desc">Play Button</string>
 	<string name="widget_back_desc">Previous Button</string>

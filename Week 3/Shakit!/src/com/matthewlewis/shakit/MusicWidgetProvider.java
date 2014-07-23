@@ -1,3 +1,15 @@
+/*
+ * Author Matthew Lewis
+ * 
+ * Project Shakit!
+ * 
+ * Package com.matthewlewis.shakit
+ * 
+ * File MusicWidgetProvider.java
+ * 
+ * Purpose 
+ * 
+ */
 package com.matthewlewis.shakit;
 
 import java.io.IOException;
@@ -40,8 +52,6 @@ public class MusicWidgetProvider extends AppWidgetProvider {
 		System.out.println("onUpdate runs from provider");
 		// TODO Auto-generated method stub
 		
-		remote.setTextViewText(R.id.widget_songLabel, "BLAH BLAH!");
-		
 		//write a default state for our play/pause button to shared prefs, since data is not retained between updates
 		saveToPrefs(BUTTON_KEY, BUTTON_PLAY, context);
 		
@@ -65,6 +75,21 @@ public class MusicWidgetProvider extends AppWidgetProvider {
 		remote.setOnClickPendingIntent(R.id.widget_next, nextPending);
 		remote.setOnClickPendingIntent(R.id.widget_previous, previousPending);
 		
+		if (MainActivity.mService != null) {
+			if (MainActivity.mService.musicPlayer != null) {
+				//set our displayed song name to whatever music service is now showing
+				remote.setTextViewText(R.id.widget_songLabel, MainActivity.mService.songTitles[MainActivity.mService.nowPlaying]);
+					
+				//set image of pause/play button according to if MusicService's musicPlayer is currently playing
+				if (MainActivity.mService.musicPlayer.isPlaying()) {
+					remote.setImageViewResource(R.id.widget_playPause, R.drawable.pause_small);
+				} else {
+					remote.setImageViewResource(R.id.widget_playPause, R.drawable.play_small);
+				}
+				
+			}			
+		}
+		
 		appWidgetManager.updateAppWidget(appWidgetIds, remote);
 		super.onUpdate(context, appWidgetManager, appWidgetIds);
 	}
@@ -74,6 +99,11 @@ public class MusicWidgetProvider extends AppWidgetProvider {
 		
 		//grab the action contained within the intent to a string so we know what has occurred
 		String action = intent.getAction();
+		
+		//grab our ids and widgetManager in case we need to update the widget
+		ComponentName widget = new ComponentName(context, MusicWidgetProvider.class);
+		AppWidgetManager wm = AppWidgetManager.getInstance(context);
+		int[] ids = wm.getAppWidgetIds(widget);
 		
 		//grab our remote view if we need to do something to its interface
 		remote = new RemoteViews(context.getPackageName(), R.layout.widget_layout);
@@ -103,17 +133,14 @@ public class MusicWidgetProvider extends AppWidgetProvider {
 			
 		} else if (action.equals("PlayPause")) {
 			
-			//check which image is currently being displayed so we can toggle it
-			ComponentName widget = new ComponentName(context, MusicWidgetProvider.class);
-			AppWidgetManager wm = AppWidgetManager.getInstance(context);
-			int[] ids = wm.getAppWidgetIds(widget);
+			
 			
 			//grab a boolean, which tells us if MainActivity currently has a reference to MusicService
-			boolean serviceConnected;
+			boolean serviceExists;
 			if (MainActivity.mService != null) {
-				serviceConnected = true;
+				serviceExists = true;
 			} else {
-				serviceConnected = false;
+				serviceExists = false;
 			}
 			
 			//read from prefs to get which icon is currently being displayed
@@ -122,7 +149,7 @@ public class MusicWidgetProvider extends AppWidgetProvider {
 				
 				
 				//since the user clicked the "play" icon, play whichever song is currently displayed
-				if (serviceConnected == true) {
+				if (serviceExists == true) {
 					//service is "active" so go ahead an play
 					System.out.println("Is it playing??!");
 					MainActivity.mService.resumeMusic();
@@ -135,18 +162,14 @@ public class MusicWidgetProvider extends AppWidgetProvider {
 					Intent musicIntent = new Intent(context, MainActivity.class);
 					musicIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 					context.startActivity(musicIntent);
-					
-					
-					
-					remote.setImageViewResource(R.id.widget_playPause, R.drawable.pause_small);
-					saveToPrefs(BUTTON_KEY, BUTTON_PAUSE, context);
+										
 				}
 				
 			} else {
 				remote.setImageViewResource(R.id.widget_playPause, R.drawable.play_small);
 				saveToPrefs(BUTTON_KEY, BUTTON_PLAY, context);
 				
-				if (serviceConnected == true) {
+				if (serviceExists == true) {
 					//pause the currently playing music
 					MainActivity.mService.stopMusic();
 					MainActivity.mService.buildNotification("play/pause");
@@ -155,21 +178,49 @@ public class MusicWidgetProvider extends AppWidgetProvider {
 					
 				}
 				
-			}
-			
-			
-			
+			}		
 			wm.partiallyUpdateAppWidget(ids, remote);
 			
 			System.out.println("PlayPause");
 		} else if (action.equals("Next")) {
-			System.out.println("Next");
-			MainActivity.mService.nextSong();
-			MainActivity.mService.buildNotification("play/pause");
+			if (MainActivity.mService != null) {
+				System.out.println("Next");
+				MainActivity.mService.nextSong();
+				MainActivity.mService.buildNotification("play/pause");
+				remote.setImageViewResource(R.id.widget_playPause, R.drawable.pause_small);
+				remote.setTextViewText(R.id.widget_songLabel, MainActivity.mService.songTitles[MainActivity.mService.nowPlaying]);
+				wm.partiallyUpdateAppWidget(ids, remote);
+			}
+			
 		} else if (action.equals("Previous")) {
-			System.out.println("Previous");
-			MainActivity.mService.previousSong();
-			MainActivity.mService.buildNotification("play/pause");
+			if (MainActivity.mService != null) {
+				System.out.println("Previous");
+				MainActivity.mService.previousSong();
+				MainActivity.mService.buildNotification("play/pause");
+				remote.setImageViewResource(R.id.widget_playPause, R.drawable.pause_small);
+				remote.setTextViewText(R.id.widget_songLabel, MainActivity.mService.songTitles[MainActivity.mService.nowPlaying]);
+				wm.partiallyUpdateAppWidget(ids, remote);
+			}
+			
+		} else if (action.equals("android.appwidget.action.APPWIDGET_APDATE")) {
+			//this is a broadcast sent from the MusicService class, so check to make
+			//sure everything is valid, then update our widget to match MusicService notification
+			if (MainActivity.mService != null) {
+				if (MainActivity.mService.musicPlayer != null) {
+					if (MainActivity.mService.musicPlayer != null) {
+						//set our displayed song name to whatever music service is now showing
+						remote.setTextViewText(R.id.widget_songLabel, MainActivity.mService.songTitles[MainActivity.mService.nowPlaying]);
+						
+						//set image of pause/play button according to if MusicService's musicPlayer is currently playing
+						if (MainActivity.mService.musicPlayer.isPlaying()) {
+							remote.setImageViewResource(R.id.widget_playPause, R.drawable.pause_small);
+						} else {
+							remote.setImageViewResource(R.id.widget_playPause, R.drawable.play_small);
+						}
+						wm.partiallyUpdateAppWidget(ids, remote);
+					}
+				}			
+			}
 		}
 		super.onReceive(context, intent);
 	}

@@ -19,6 +19,7 @@ import java.util.Random;
 
 import com.matthewlewis.shakit.MusicService.LocalBinder;
 import android.app.Activity;
+import android.appwidget.AppWidgetManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -48,6 +49,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.RemoteViews;
 import android.widget.TextView;
 
 public class MainActivity extends Activity implements SensorEventListener {
@@ -198,8 +200,9 @@ public class MainActivity extends Activity implements SensorEventListener {
 					mService.buildNotification("play/pause");
 					playPause.setImageResource(R.drawable.play);
 				}
+				//make sure to update widget when the play/pause button is tapped
+				updateWidget();
 			}
-
 		});
 		// set onclicklistener for our next button
 		next.setOnClickListener(new OnClickListener() {
@@ -221,8 +224,10 @@ public class MainActivity extends Activity implements SensorEventListener {
 				setSongDetails(playingInt);
 				mService.buildNotification("play/pause");
 				setRandomColor(nextView);
+				
+				//make sure to update widget when the next button is tapped
+				updateWidget();
 			}
-
 		});
 		// set onclicklistener for our previous button
 		previous.setOnClickListener(new OnClickListener() {
@@ -243,6 +248,9 @@ public class MainActivity extends Activity implements SensorEventListener {
 				setSongDetails(playingInt);
 				mService.buildNotification("play/pause");
 				setRandomColor(previousView);
+				
+				//make sure to update widget when the previous button is tapped
+				updateWidget();
 			}
 
 		});
@@ -549,9 +557,6 @@ public class MainActivity extends Activity implements SensorEventListener {
 			// add list of titles to the intent as well
 			startMusicService.putExtra(MusicService.TITLE_ARRAY, songTitles);
 
-			// add a track to play
-			// startMusicService.putExtra("number", 0);
-
 			// start the service by binding to it
 			context.bindService(startMusicService, mConnection,
 					Context.BIND_AUTO_CREATE);
@@ -716,5 +721,22 @@ public class MainActivity extends Activity implements SensorEventListener {
 		}
 
 	}
-
+	
+	//this method is called whenever the user interacts with the UI and is just needed to keep our widget(s) updated
+	public void updateWidget() {
+		//grab widgetManager so we can be sure to keep our widget in sync with playback
+		AppWidgetManager widgetManager = AppWidgetManager.getInstance(context);
+				
+		//grab MusicWidgetProvider 
+		ComponentName widgetProvider = new ComponentName(getApplicationContext(), MusicWidgetProvider.class);
+				
+		//grab the array of widgetIds associated with our app to update them since the user changed our notification
+		int[] widgetIds = widgetManager.getAppWidgetIds(widgetProvider);
+				
+				
+		Intent updateWidget = new Intent(context, MusicWidgetProvider.class);
+		updateWidget.setAction("android.appwidget.action.APPWIDGET_APDATE");
+		updateWidget.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, widgetIds);
+		sendBroadcast(updateWidget);
+	}
 }
