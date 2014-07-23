@@ -55,8 +55,8 @@ public class MainActivity extends Activity implements SensorEventListener {
 	private SensorManager sensorManager;
 	private Sensor accelerometerSensor;
 	private Sensor proximitySensor;
-	String[] songTitles;
-	String[] songPaths;
+	static String[] songTitles;
+	static String[] songPaths;
 	String[] songLengths;
 	int[] bgColors;
 	private float firstDistance;
@@ -247,6 +247,7 @@ public class MainActivity extends Activity implements SensorEventListener {
 
 		});
 		
+		sendBroadcast(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME));
 		
 	}
 
