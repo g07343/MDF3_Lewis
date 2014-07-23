@@ -70,10 +70,11 @@ public class MusicService extends Service{
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		// TODO Auto-generated method stub
-
+		System.out.println("onStartCommand runs!");
 		//create an intent for our notification broadcast, which communicates to MainActivity
 		Intent notificationIntent = new Intent("com.matthewlewis.shakit.NotificationReceiver");
-
+		Intent widgetNotificationIntent = new Intent("android.appwidget.action.APPWIDGET_UPDATE");
+		
 		//the below logic checks what action was sent via the intent and then updates the Service accordingly
 		if (musicPlayer != null) {
 			if (intent.getAction().equals("Pause")) {
@@ -86,6 +87,7 @@ public class MusicService extends Service{
 					isPaused = false;
 				}
 				notificationIntent.putExtra("notificationAction", "Pause");
+				widgetNotificationIntent.putExtra("notificationAction", "Pause");
 				buildNotification("play/pause");
 
 			} else if (intent.getAction().equals("Next")) {
@@ -93,14 +95,17 @@ public class MusicService extends Service{
 				System.out.println("NEXT");
 				buildNotification("play/pause");
 				notificationIntent.putExtra("playing", nowPlaying);
+				widgetNotificationIntent.putExtra("playing", nowPlaying);
 			} else if (intent.getAction().equals("Previous")) {
 				previousSong();
 				buildNotification("play/pause");
 				notificationIntent.putExtra("playing", nowPlaying);
+				widgetNotificationIntent.putExtra("playing", nowPlaying);
 			} else if (intent.getAction().equals("Stop")) {
 				if (musicPlayer != null) {
 					if (musicPlayer.isPlaying()) {
 						notificationIntent.putExtra("notificationAction", "Pause");
+						widgetNotificationIntent.putExtra("notificationAction", "Pause");
 						musicPlayer.stop();
 					}
 					
@@ -109,14 +114,20 @@ public class MusicService extends Service{
 					this.stopSelf();
 				}
 
+			} else if (intent.getAction().equals("playPause")) {
+				System.out.println("playPause received from intent!");
+				
 			}
 		} else { 
+			System.out.println("musicPlayer in service was null");
 			//buildNotification("destroy");
 		}
 		//send our broadcast to MainActivity to let it know what was done
 		sendBroadcast(notificationIntent);
+		sendBroadcast(widgetNotificationIntent);
 		return super.onStartCommand(intent, flags, startId);
 	}
+
 
 	//this function skips to the next song in our array after checking to make sure we
 	//are within the bounds of our array

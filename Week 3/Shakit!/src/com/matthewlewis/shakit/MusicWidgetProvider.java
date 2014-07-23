@@ -119,8 +119,7 @@ public class MusicWidgetProvider extends AppWidgetProvider {
 			//read from prefs to get which icon is currently being displayed
 			String currentIcon = readPrefs(BUTTON_KEY, context);
 			if (currentIcon.equals(BUTTON_PLAY)) {
-				remote.setImageViewResource(R.id.widget_playPause, R.drawable.pause_small);
-				saveToPrefs(BUTTON_KEY, BUTTON_PAUSE, context);
+				
 				
 				//since the user clicked the "play" icon, play whichever song is currently displayed
 				if (serviceConnected == true) {
@@ -128,9 +127,19 @@ public class MusicWidgetProvider extends AppWidgetProvider {
 					System.out.println("Is it playing??!");
 					MainActivity.mService.resumeMusic();
 					MainActivity.mService.buildNotification("play/pause");
+					remote.setImageViewResource(R.id.widget_playPause, R.drawable.pause_small);
+					saveToPrefs(BUTTON_KEY, BUTTON_PAUSE, context);
 				} else {
 					//service either wasn't started, or is not running so start it
+					System.out.println("Can't play because Music Service is not currently running!");
+					Intent musicIntent = new Intent(context, MainActivity.class);
+					musicIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+					context.startActivity(musicIntent);
 					
+					
+					
+					remote.setImageViewResource(R.id.widget_playPause, R.drawable.pause_small);
+					saveToPrefs(BUTTON_KEY, BUTTON_PAUSE, context);
 				}
 				
 			} else {
@@ -141,6 +150,9 @@ public class MusicWidgetProvider extends AppWidgetProvider {
 					//pause the currently playing music
 					MainActivity.mService.stopMusic();
 					MainActivity.mService.buildNotification("play/pause");
+				} else {
+					System.out.println("Can't pause because Music Service is not currently running!");
+					
 				}
 				
 			}
@@ -152,8 +164,12 @@ public class MusicWidgetProvider extends AppWidgetProvider {
 			System.out.println("PlayPause");
 		} else if (action.equals("Next")) {
 			System.out.println("Next");
+			MainActivity.mService.nextSong();
+			MainActivity.mService.buildNotification("play/pause");
 		} else if (action.equals("Previous")) {
 			System.out.println("Previous");
+			MainActivity.mService.previousSong();
+			MainActivity.mService.buildNotification("play/pause");
 		}
 		super.onReceive(context, intent);
 	}
@@ -177,4 +193,5 @@ public class MusicWidgetProvider extends AppWidgetProvider {
 		String val = prefs.getString(key, null);
 		return val;
 	}
+	
 }
