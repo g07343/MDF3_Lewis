@@ -247,7 +247,6 @@ public class MainActivity extends Activity implements SensorEventListener {
 
 		});
 		
-		sendBroadcast(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME));
 		
 	}
 

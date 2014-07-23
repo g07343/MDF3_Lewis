@@ -7,17 +7,12 @@
         android:id="@+id/linearLayout2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="25dp"
-        android:layout_marginTop="30dp"
+        android:layout_marginLeft="28dp"
+        android:layout_marginTop="22dp"
         android:background="#50000000"
-        android:orientation="vertical" >
-
-        <LinearLayout
-            android:id="@+id/linearLayout1"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:orientation="vertical" >
+        android:orientation="vertical"
+        android:paddingBottom="14dp"
+        android:paddingTop="14dp" >
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -25,24 +20,14 @@
                 android:orientation="horizontal" >
 
                 <TextView
-                    android:id="@+id/textView1"
-                    android:layout_width="wrap_content"
+                    android:id="@id/widget_songLabel"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="3"
+                    android:layout_gravity="center"
                     android:gravity="center"
                     android:text="@string/widget_songLabel"
                     android:textAppearance="?android:attr/textAppearanceSmall" />
 
-                <ImageView
-                    android:id="@+id/imageView2"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:adjustViewBounds="true"
-                    android:maxHeight="15dp"
-                    android:maxWidth="15dp"
-                    android:scaleType="fitCenter"
-                    android:src="@drawable/arrow_down" />
             </LinearLayout>
 
             <LinearLayout
@@ -51,11 +36,12 @@
                 android:orientation="horizontal" >
                 
                 <ImageView
-                    android:id="@+id/imageView4"
+                    android:id="@id/widget_previous"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:adjustViewBounds="true"
+                    android:contentDescription="@string/widget_back_desc"
                     android:maxHeight="25dp"
                     android:maxWidth="25dp"
                     android:paddingLeft="10dp"
@@ -63,41 +49,58 @@
                     android:src="@drawable/back_small" />
                 
                 <ImageView
-                    android:id="@+id/imageView5"
+                    android:id="@id/widget_next"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:adjustViewBounds="true"
+                    android:contentDescription="@string/widget_next_desc"
                     android:maxHeight="25dp"
                     android:maxWidth="25dp"
                     android:scaleType="fitCenter"
                     android:src="@drawable/next_small" />
                 
             </LinearLayout>
-        </LinearLayout>
+        
     </LinearLayout>
 
     <ImageView
-        android:id="@+id/imageView1"
+        android:id="@id/widget_playPauseBg"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
         android:layout_marginTop="18dp"
         android:adjustViewBounds="true"
+        android:contentDescription="@string/widget_speaker_desc"
         android:maxHeight="80dp"
         android:maxWidth="80dp"
         android:scaleType="fitCenter"
         android:src="@drawable/speaker_yellow" />
 
     <ImageView
-        android:id="@+id/imageView3"
+        android:id="@id/widget_playPause"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="25dp"
         android:layout_marginTop="40dp"
         android:adjustViewBounds="true"
+        android:contentDescription="@string/widget_play_desc"
         android:maxHeight="40dp"
         android:maxWidth="40dp"
         android:scaleType="fitCenter"
         android:src="@drawable/play_small" />
+
+    <ImageView
+        android:id="@id/widget_dropdown"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="300dp"
+        android:layout_marginTop="30dp"
+        android:adjustViewBounds="true"
+        android:contentDescription="@string/widget_dropDown_desc"
+        android:maxHeight="15dp"
+        android:maxWidth="15dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/arrow_down" />
     
 </RelativeLayout>

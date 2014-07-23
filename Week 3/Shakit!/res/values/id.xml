@@ -10,4 +10,10 @@
     <item type="id" name="previousView" />
     <item type="id" name="nextView" />
     <item type="id" name="songCounter" />
+    <item type="id" name="widget_songLabel" />
+    <item type="id" name="widget_dropdown" />
+    <item type="id" name="widget_previous" />
+    <item type="id" name="widget_next" />
+    <item type="id" name="widget_playPause" />
+    <item type="id" name="widget_playPauseBg" />
 </resources>

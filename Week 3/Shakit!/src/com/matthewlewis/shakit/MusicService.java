@@ -348,7 +348,7 @@ public class MusicService extends Service{
     	PendingIntent nextPending = PendingIntent.getService(this, 0, basicNext, 0);
     	PendingIntent previousPending = PendingIntent.getService(this, 0, basicPrevious, 0);
     	PendingIntent closePending = PendingIntent.getService(this, 0, basicClose, 0);
-    	
+ 
     	if (notification == null) {
     		notification = new Notification();
     	}
