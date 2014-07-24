@@ -16,4 +16,6 @@
     <item type="id" name="widget_next" />
     <item type="id" name="widget_playPause" />
     <item type="id" name="widget_playPauseBg" />
+    <item type="id" name="widgetConfig_animator" />
+    <item type="id" name="widgetConfig_pagination" />
 </resources>

@@ -35,7 +35,7 @@
         </receiver>
         <activity
             android:name=".WidgetConfigActivity"
-            android:label="Configure Music">
+            android:label="Configure Shakit Widget">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>

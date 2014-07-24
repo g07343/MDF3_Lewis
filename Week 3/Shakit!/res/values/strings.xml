@@ -21,4 +21,15 @@
 	<string name="widget_back_desc">Previous Button</string>
 	<string name="widget_next_desc">Next Button</string>
 	<string name="widget_dropDown_desc">Dropdown Button</string>
+	<string name="widgetConfig_speakerTitle">Choose a Speaker color</string>
+	<string name="widgetConfig_buttonTitle">Choose a Button color</string>
+	<string name="widgetConfig_tintTitle">Choose a Tint color</string>
+	<string name="widgetConfig_redColor">Red</string>
+	<string name="widgetConfig_yellowColor">Yellow</string>
+	<string name="widgetConfig_blueColor">Blue</string>
+	<string name="widgetConfig_darkColor">Dark</string>
+	<string name="widgetConfig_lightColor">Light</string>
+	<string name="widgetConfig_blackColor">Black</string>
+	<string name="widgetConfig_whiteColor">White</string>
+	<string name="widgetConfig_pageIndicatorDesc">Page Indicator</string>
 </resources>

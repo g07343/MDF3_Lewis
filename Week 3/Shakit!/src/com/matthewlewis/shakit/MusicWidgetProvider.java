@@ -7,7 +7,8 @@
  * 
  * File MusicWidgetProvider.java
  * 
- * Purpose 
+ * Purpose The MusicWidgetProvider class is the main class responsible for updating and maintaining any widgets the user decides
+ * to create.  It also allows for controlling music playback via the widget's interface.
  * 
  */
 package com.matthewlewis.shakit;

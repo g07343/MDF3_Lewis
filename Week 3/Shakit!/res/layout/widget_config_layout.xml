@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" 
+    android:layout_gravity="bottom">
+
+    <include
+        android:id="@+id/layout9"
+        layout="@layout/widget_layout" />
+	
+    <ViewAnimator
+        android:id="@id/widgetConfig_animator"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+    
+	    <LinearLayout
+	        android:layout_width="match_parent"
+	        android:layout_height ="wrap_content"
+	        android:orientation="vertical">
+		    <TextView
+		        android:id="@+id/textView1"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:layout_gravity="center_horizontal"
+		        android:gravity="center_horizontal"
+		        android:text="@string/widgetConfig_speakerTitle"
+		        android:textAppearance="?android:attr/textAppearanceMedium" />
+		
+		    <RadioGroup
+		        android:id="@+id/radioGroup1"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:layout_gravity="center_horizontal"
+		        android:layout_marginTop="10dp" >
+		
+		        <RadioButton
+		            android:id="@+id/radio0"
+		            android:layout_width="wrap_content"
+		            android:layout_height="wrap_content"
+		            android:checked="true"
+		            android:text="@string/widgetConfig_yellowColor" />
+		
+		        <RadioButton
+		            android:id="@+id/radio1"
+		            android:layout_width="wrap_content"
+		            android:layout_height="wrap_content"
+		            android:layout_marginTop="10dp"
+		            android:text="@string/widgetConfig_redColor" />
+		
+		        <RadioButton
+		            android:id="@+id/radio2"
+		            android:layout_width="wrap_content"
+		            android:layout_height="wrap_content"
+		            android:layout_marginTop="10dp"
+		            android:text="@string/widgetConfig_blueColor" />
+		
+		    </RadioGroup>
+		    
+		</LinearLayout>
+		
+	    <LinearLayout
+	        android:layout_width="match_parent"
+	        android:layout_height ="wrap_content"
+	        android:orientation="vertical">
+		    <TextView
+		        android:id="@+id/textView2"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:layout_gravity="center_horizontal"
+		        android:gravity="center_horizontal"
+		        android:text="@string/widgetConfig_buttonTitle"
+		        android:textAppearance="?android:attr/textAppearanceMedium" />
+		
+		    <RadioGroup
+		        android:id="@+id/radioGroup2"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:layout_gravity="center_horizontal"
+		        android:layout_marginTop="10dp" >
+
+		        <RadioButton
+		            android:id="@+id/radio5"
+		            android:layout_width="wrap_content"
+		            android:layout_height="wrap_content"
+		            android:checked="true"
+		            android:text="@string/widgetConfig_whiteColor" />
+
+		        <RadioButton
+		            android:id="@+id/radioButton1"
+		            android:layout_width="wrap_content"
+		            android:layout_height="wrap_content"
+		            android:layout_marginTop="10dp"
+		            android:text="@string/widgetConfig_blackColor" />
+		
+		        <RadioButton
+		            android:id="@+id/radio3"
+		            android:layout_width="wrap_content"
+		            android:layout_height="wrap_content"
+		            android:layout_marginTop="10dp"
+		            android:text="@string/widgetConfig_yellowColor" />
+		
+		        <RadioButton
+		            android:id="@+id/radio4"
+		            android:layout_width="wrap_content"
+		            android:layout_height="wrap_content"
+		            android:layout_marginTop="10dp"
+		            android:text="@string/widgetConfig_redColor" />
+		
+		    </RadioGroup>
+		    
+		</LinearLayout>
+		
+	    <LinearLayout
+	        android:layout_width="match_parent"
+	        android:layout_height ="wrap_content"
+	        android:orientation="vertical">
+
+		    <TextView
+		        android:id="@+id/textView3"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:layout_gravity="center_horizontal"
+		        android:gravity="center_horizontal"
+		        android:text="@string/widgetConfig_tintTitle"
+		        android:textAppearance="?android:attr/textAppearanceMedium" />
+		
+		    <RadioGroup
+		        android:id="@+id/radioGroup3"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:layout_gravity="center_horizontal"
+		        android:layout_marginTop="10dp" >
+
+		        <RadioButton
+		            android:id="@+id/radio6"
+		            android:layout_width="wrap_content"
+		            android:layout_height="wrap_content"
+		            android:checked="true"
+		            android:text="@string/widgetConfig_darkColor" />
+
+		        <RadioButton
+		            android:id="@+id/radioButton7"
+		            android:layout_width="wrap_content"
+		            android:layout_height="wrap_content"
+		            android:layout_marginTop="10dp"
+		            android:text="@string/widgetConfig_lightColor" />
+		
+		        <RadioButton
+		            android:id="@+id/radio8"
+		            android:layout_width="wrap_content"
+		            android:layout_height="wrap_content"
+		            android:layout_marginTop="10dp"
+		            android:text="@string/widgetConfig_redColor" />
+		
+		        <RadioButton
+		            android:id="@+id/radio9"
+		            android:layout_width="wrap_content"
+		            android:layout_height="wrap_content"
+		            android:layout_marginTop="10dp"
+		            android:text="@string/widgetConfig_blueColor" />
+		
+		    </RadioGroup>
+		    
+		</LinearLayout>
+	    
+	</ViewAnimator>
+	
+    <ImageView
+        android:id="@id/widgetConfig_pagination"
+        android:layout_width="100dp"
+        android:layout_height="50dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="130dp"
+        android:adjustViewBounds="true"
+        android:contentDescription="@string/widgetConfig_pageIndicatorDesc"
+        android:scaleType="centerInside"
+        android:src="@drawable/page1" />
+	
+</LinearLayout>
