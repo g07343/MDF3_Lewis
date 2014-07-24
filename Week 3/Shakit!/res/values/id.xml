@@ -16,6 +16,22 @@
     <item type="id" name="widget_next" />
     <item type="id" name="widget_playPause" />
     <item type="id" name="widget_playPauseBg" />
+    <item type="id" name="widget_tintedBg" />
     <item type="id" name="widgetConfig_animator" />
     <item type="id" name="widgetConfig_pagination" />
+    <item type="id" name="widgetConfig_speakerGroup" />
+    <item type="id" name="widgetConfig_buttonGroup" />
+    <item type="id" name="widgetConfig_backgroundGroup" />
+    <item type="id" name="widgetConfig_speakerYellow" />
+    <item type="id" name="widgetConfig_speakerRed" />
+    <item type="id" name="widgetConfig_speakerBlue" />
+    <item type="id" name="widgetConfig_buttonWhite" />
+    <item type="id" name="widgetConfig_buttonBlack" />
+    <item type="id" name="widgetConfig_buttonYellow" />
+    <item type="id" name="widgetConfig_buttonRed" />
+    <item type="id" name="widgetConfig_tintDark" />
+    <item type="id" name="widgetConfig_tintLight" />
+    <item type="id" name="widgetConfig_tintRed" />
+    <item type="id" name="widgetConfig_tintBlue" />
+    <item type="id" name="widgetConfig_button" />
 </resources>

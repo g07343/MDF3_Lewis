@@ -2,8 +2,9 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical" 
-    android:layout_gravity="bottom">
+    android:layout_gravity="bottom"
+    android:background="#E1E1E1"
+    android:orientation="vertical" >
 
     <include
         android:id="@+id/layout9"
@@ -13,156 +14,161 @@
         android:id="@id/widgetConfig_animator"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-    
-	    <LinearLayout
-	        android:layout_width="match_parent"
-	        android:layout_height ="wrap_content"
-	        android:orientation="vertical">
-		    <TextView
-		        android:id="@+id/textView1"
-		        android:layout_width="wrap_content"
-		        android:layout_height="wrap_content"
-		        android:layout_gravity="center_horizontal"
-		        android:gravity="center_horizontal"
-		        android:text="@string/widgetConfig_speakerTitle"
-		        android:textAppearance="?android:attr/textAppearanceMedium" />
-		
-		    <RadioGroup
-		        android:id="@+id/radioGroup1"
-		        android:layout_width="wrap_content"
-		        android:layout_height="wrap_content"
-		        android:layout_gravity="center_horizontal"
-		        android:layout_marginTop="10dp" >
-		
-		        <RadioButton
-		            android:id="@+id/radio0"
-		            android:layout_width="wrap_content"
-		            android:layout_height="wrap_content"
-		            android:checked="true"
-		            android:text="@string/widgetConfig_yellowColor" />
-		
-		        <RadioButton
-		            android:id="@+id/radio1"
-		            android:layout_width="wrap_content"
-		            android:layout_height="wrap_content"
-		            android:layout_marginTop="10dp"
-		            android:text="@string/widgetConfig_redColor" />
-		
-		        <RadioButton
-		            android:id="@+id/radio2"
-		            android:layout_width="wrap_content"
-		            android:layout_height="wrap_content"
-		            android:layout_marginTop="10dp"
-		            android:text="@string/widgetConfig_blueColor" />
-		
-		    </RadioGroup>
-		    
-		</LinearLayout>
-		
-	    <LinearLayout
-	        android:layout_width="match_parent"
-	        android:layout_height ="wrap_content"
-	        android:orientation="vertical">
-		    <TextView
-		        android:id="@+id/textView2"
-		        android:layout_width="wrap_content"
-		        android:layout_height="wrap_content"
-		        android:layout_gravity="center_horizontal"
-		        android:gravity="center_horizontal"
-		        android:text="@string/widgetConfig_buttonTitle"
-		        android:textAppearance="?android:attr/textAppearanceMedium" />
-		
-		    <RadioGroup
-		        android:id="@+id/radioGroup2"
-		        android:layout_width="wrap_content"
-		        android:layout_height="wrap_content"
-		        android:layout_gravity="center_horizontal"
-		        android:layout_marginTop="10dp" >
 
-		        <RadioButton
-		            android:id="@+id/radio5"
-		            android:layout_width="wrap_content"
-		            android:layout_height="wrap_content"
-		            android:checked="true"
-		            android:text="@string/widgetConfig_whiteColor" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
 
-		        <RadioButton
-		            android:id="@+id/radioButton1"
-		            android:layout_width="wrap_content"
-		            android:layout_height="wrap_content"
-		            android:layout_marginTop="10dp"
-		            android:text="@string/widgetConfig_blackColor" />
-		
-		        <RadioButton
-		            android:id="@+id/radio3"
-		            android:layout_width="wrap_content"
-		            android:layout_height="wrap_content"
-		            android:layout_marginTop="10dp"
-		            android:text="@string/widgetConfig_yellowColor" />
-		
-		        <RadioButton
-		            android:id="@+id/radio4"
-		            android:layout_width="wrap_content"
-		            android:layout_height="wrap_content"
-		            android:layout_marginTop="10dp"
-		            android:text="@string/widgetConfig_redColor" />
-		
-		    </RadioGroup>
-		    
-		</LinearLayout>
-		
-	    <LinearLayout
-	        android:layout_width="match_parent"
-	        android:layout_height ="wrap_content"
-	        android:orientation="vertical">
+            <TextView
+                android:id="@+id/textView1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:gravity="center_horizontal"
+                android:text="@string/widgetConfig_speakerTitle"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
 
-		    <TextView
-		        android:id="@+id/textView3"
-		        android:layout_width="wrap_content"
-		        android:layout_height="wrap_content"
-		        android:layout_gravity="center_horizontal"
-		        android:gravity="center_horizontal"
-		        android:text="@string/widgetConfig_tintTitle"
-		        android:textAppearance="?android:attr/textAppearanceMedium" />
-		
-		    <RadioGroup
-		        android:id="@+id/radioGroup3"
-		        android:layout_width="wrap_content"
-		        android:layout_height="wrap_content"
-		        android:layout_gravity="center_horizontal"
-		        android:layout_marginTop="10dp" >
+            <RadioGroup
+                android:id="@id/widgetConfig_speakerGroup"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="10dp" >
 
-		        <RadioButton
-		            android:id="@+id/radio6"
-		            android:layout_width="wrap_content"
-		            android:layout_height="wrap_content"
-		            android:checked="true"
-		            android:text="@string/widgetConfig_darkColor" />
+                <RadioButton
+                    android:id="@id/widgetConfig_speakerYellow"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="@string/widgetConfig_yellowColor" />
 
-		        <RadioButton
-		            android:id="@+id/radioButton7"
-		            android:layout_width="wrap_content"
-		            android:layout_height="wrap_content"
-		            android:layout_marginTop="10dp"
-		            android:text="@string/widgetConfig_lightColor" />
-		
-		        <RadioButton
-		            android:id="@+id/radio8"
-		            android:layout_width="wrap_content"
-		            android:layout_height="wrap_content"
-		            android:layout_marginTop="10dp"
-		            android:text="@string/widgetConfig_redColor" />
-		
-		        <RadioButton
-		            android:id="@+id/radio9"
-		            android:layout_width="wrap_content"
-		            android:layout_height="wrap_content"
-		            android:layout_marginTop="10dp"
-		            android:text="@string/widgetConfig_blueColor" />
-		
-		    </RadioGroup>
-		    
-		</LinearLayout>
+                <RadioButton
+                    android:id="@id/widgetConfig_speakerRed"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/widgetConfig_redColor" />
+
+                <RadioButton
+                    android:id="@id/widgetConfig_speakerBlue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/widgetConfig_blueColor" />
+            </RadioGroup>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <TextView
+                android:id="@+id/textView2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:gravity="center_horizontal"
+                android:text="@string/widgetConfig_buttonTitle"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+            <RadioGroup
+                android:id="@id/widgetConfig_buttonGroup"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="10dp" >
+
+                <RadioButton
+                    android:id="@id/widgetConfig_buttonWhite"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="@string/widgetConfig_whiteColor" />
+
+                <RadioButton
+                    android:id="@id/widgetConfig_buttonBlack"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/widgetConfig_blackColor" />
+
+                <RadioButton
+                    android:id="@id/widgetConfig_buttonYellow"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/widgetConfig_yellowColor" />
+
+                <RadioButton
+                    android:id="@id/widgetConfig_buttonRed"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/widgetConfig_redColor" />
+            </RadioGroup>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <TextView
+                android:id="@+id/textView3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:gravity="center_horizontal"
+                android:text="@string/widgetConfig_tintTitle"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+
+            <RadioGroup
+                android:id="@id/widgetConfig_backgroundGroup"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="10dp" >
+
+                <RadioButton
+                    android:id="@id/widgetConfig_tintDark"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="@string/widgetConfig_darkColor" />
+
+                <RadioButton
+                    android:id="@id/widgetConfig_tintLight"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/widgetConfig_lightColor" />
+
+                <RadioButton
+                    android:id="@id/widgetConfig_tintRed"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/widgetConfig_redColor" />
+
+                <RadioButton
+                    android:id="@id/widgetConfig_tintBlue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/widgetConfig_blueColor" />
+            </RadioGroup>
+
+            <Button
+                android:id="@id/widgetConfig_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="50dp"
+                android:text="@string/widgetConfig_buttonLabel" />
+
+        </LinearLayout>
 	    
 	</ViewAnimator>
 	
@@ -171,7 +177,7 @@
         android:layout_width="100dp"
         android:layout_height="50dp"
         android:layout_gravity="center"
-        android:layout_marginTop="130dp"
+        android:layout_marginTop="30dp"
         android:adjustViewBounds="true"
         android:contentDescription="@string/widgetConfig_pageIndicatorDesc"
         android:scaleType="centerInside"
