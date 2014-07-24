@@ -262,17 +262,25 @@ public class WidgetConfigActivity  extends Activity {
 						} else if (tintColor.equals("Blue")) {
 							remote.setInt(R.id.widget_tintedBg, "setBackgroundColor", Color.parseColor("#500018ff"));
 						}
+						
+						//finally check to see if MusicService data is not null, and if not, apply the first song (or current song) to the label
+						if (MainActivity.mService != null) {
+							if (MainActivity.mService.songTitles != null) {
+								remote.setTextViewText(R.id.widget_songLabel, MainActivity.mService.songTitles[MainActivity.mService.nowPlaying]);
+							} else {
+								remote.setTextViewText(R.id.widget_songLabel, MainActivity.songTitles[0]);
+							}
+							
+						}
 					}
-					
-					//tell widgetManager to update our widget
-					AppWidgetManager.getInstance(getApplicationContext()).updateAppWidget(widgetId, remote);
-					
+						
 					//unfortunately, we need to set our intents here, adding even more logic to this poor onClickListener
 					
 					//create all of our intents for each button contained within the widget
 					Intent playPauseIntent = new Intent(getApplicationContext(), MusicWidgetProvider.class);
 					Intent nextIntent = new Intent(getApplicationContext(), MusicWidgetProvider.class);
 					Intent previousIntent = new Intent(getApplicationContext(), MusicWidgetProvider.class);
+					Intent goToIntent = new Intent(getApplicationContext(), MainActivity.class);
 					
 					//set up actions for each intent, so we know which was pressed
 					playPauseIntent.setAction("PlayPause");
@@ -283,11 +291,16 @@ public class WidgetConfigActivity  extends Activity {
 					PendingIntent playPausePending = PendingIntent.getBroadcast(getApplicationContext(), 0, playPauseIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 					PendingIntent nextPending = PendingIntent.getBroadcast(getApplicationContext(), 0, nextIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 					PendingIntent previousPending = PendingIntent.getBroadcast(getApplicationContext(), 0, previousIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+					PendingIntent goToActivity = PendingIntent.getActivity(getApplicationContext(), 0, goToIntent, 0);
 					
 					//add our onClickPendingIntent 'listeners' to each of our widget's buttons
 					remote.setOnClickPendingIntent(R.id.widget_playPause, playPausePending);
 					remote.setOnClickPendingIntent(R.id.widget_next, nextPending);
 					remote.setOnClickPendingIntent(R.id.widget_previous, previousPending);
+					remote.setOnClickPendingIntent(R.id.widget_songLabel, goToActivity);
+					
+					//tell widgetManager to update our widget
+					AppWidgetManager.getInstance(getApplicationContext()).updateAppWidget(widgetId, remote);
 					
 					Intent result = new Intent();
 					result.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId);

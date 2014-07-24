@@ -50,8 +50,12 @@ public class MusicWidgetProvider extends AppWidgetProvider {
 		System.out.println("onUpdate runs from provider");
 		// TODO Auto-generated method stub
 		
-		//write a default state for our play/pause button to shared prefs, since data is not retained between updates
-		saveToPrefs(BUTTON_KEY, BUTTON_PLAY, context);
+		String defaultState = readPrefs(BUTTON_KEY, context);
+		if (defaultState == null) {
+			//write a default state for our play/pause button to shared prefs, since data is not retained between updates
+			saveToPrefs(BUTTON_KEY, BUTTON_PLAY, context);
+		}
+		
 		
 		//create all of our intents for each button contained within the widget
 		Intent playPauseIntent = new Intent(context, MusicWidgetProvider.class);
@@ -77,18 +81,51 @@ public class MusicWidgetProvider extends AppWidgetProvider {
 			if (MainActivity.mService.musicPlayer != null) {
 				//set our displayed song name to whatever music service is now showing
 				remote.setTextViewText(R.id.widget_songLabel, MainActivity.mService.songTitles[MainActivity.mService.nowPlaying]);
-					
+				
+				String buttonColor = readPrefs("buttonColor", context);
+				
 				//set image of pause/play button according to if MusicService's musicPlayer is currently playing
 				if (MainActivity.mService.musicPlayer.isPlaying()) {
-					remote.setImageViewResource(R.id.widget_playPause, R.drawable.pause_small);
+					int pauseBtnDrawable;
+					if (buttonColor.equals("White")) {
+						pauseBtnDrawable = R.drawable.pause_small;						
+						remote.setImageViewResource(R.id.widget_playPause, pauseBtnDrawable);						
+					} else if (buttonColor.equals("Black")) {
+						pauseBtnDrawable = R.drawable.pause_small_black;						
+						remote.setImageViewResource(R.id.widget_playPause, pauseBtnDrawable);						
+					} else if (buttonColor.equals("Yellow")) {
+						pauseBtnDrawable = R.drawable.pause_small_yellow;						
+						remote.setImageViewResource(R.id.widget_playPause, pauseBtnDrawable);						
+					} else if (buttonColor.equals("Red")) {
+						pauseBtnDrawable = R.drawable.pause_small_red;			
+						remote.setImageViewResource(R.id.widget_playPause, pauseBtnDrawable);						
+					}
 				} else {
-					remote.setImageViewResource(R.id.widget_playPause, R.drawable.play_small);
+					//remote.setImageViewResource(R.id.widget_playPause, R.drawable.play_small);
+					System.out.println("not playing...");
+					int playBtnDrawable;
+					
+					//set our pause button according to the color the user chose
+					if (buttonColor.equals("White")) {
+						playBtnDrawable = R.drawable.play_small;						
+						remote.setImageViewResource(R.id.widget_playPause, playBtnDrawable);						
+					} else if (buttonColor.equals("Black")) {
+						playBtnDrawable = R.drawable.play_small_black;						
+						remote.setImageViewResource(R.id.widget_playPause, playBtnDrawable);						
+					} else if (buttonColor.equals("Yellow")) {
+						playBtnDrawable = R.drawable.play_small_yellow;						
+						remote.setImageViewResource(R.id.widget_playPause, playBtnDrawable);						
+					} else if (buttonColor.equals("Red")) {
+						playBtnDrawable = R.drawable.play_small_red;			
+						remote.setImageViewResource(R.id.widget_playPause, playBtnDrawable);						
+					}
 				}
+				
 				
 			}			
 		}
-		
 		appWidgetManager.updateAppWidget(appWidgetIds, remote);
+		
 		super.onUpdate(context, appWidgetManager, appWidgetIds);
 	}
 
@@ -143,17 +180,22 @@ public class MusicWidgetProvider extends AppWidgetProvider {
 			
 			//read from prefs to get which icon is currently being displayed
 			String currentIcon = readPrefs(BUTTON_KEY, context);
-			if (currentIcon.equals(BUTTON_PLAY)) {
-				
+			if (currentIcon.equals("play")) {
+				System.out.println("icon was play");
+				updatePlayPause(context);
 				
 				//since the user clicked the "play" icon, play whichever song is currently displayed
 				if (serviceExists == true) {
+					
+					//update our play/pause button
+					
+					
 					//service is "active" so go ahead an play
-					System.out.println("Is it playing??!");
 					MainActivity.mService.resumeMusic();
 					MainActivity.mService.buildNotification("play/pause");
-					remote.setImageViewResource(R.id.widget_playPause, R.drawable.pause_small);
 					saveToPrefs(BUTTON_KEY, BUTTON_PAUSE, context);
+					System.out.println("BUTTON_PAUSE global var equals:  " + BUTTON_PAUSE);
+					
 				} else {
 					//service either wasn't started, or is not running so start it
 					System.out.println("Can't play because Music Service is not currently running!");
@@ -164,13 +206,17 @@ public class MusicWidgetProvider extends AppWidgetProvider {
 				}
 				
 			} else {
-				remote.setImageViewResource(R.id.widget_playPause, R.drawable.play_small);
-				saveToPrefs(BUTTON_KEY, BUTTON_PLAY, context);
-				
+				System.out.println("playPause else ran");
+				updatePlayPause(context);
+				//ensure that our service actually exists before trying to make calls to it			
 				if (serviceExists == true) {
-					//pause the currently playing music
+					
+					
+					//stop music playback
 					MainActivity.mService.stopMusic();
 					MainActivity.mService.buildNotification("play/pause");
+					saveToPrefs(BUTTON_KEY, BUTTON_PLAY, context);	
+	
 				} else {
 					System.out.println("Can't pause because Music Service is not currently running!");
 					
@@ -180,49 +226,97 @@ public class MusicWidgetProvider extends AppWidgetProvider {
 			wm.partiallyUpdateAppWidget(ids, remote);
 			
 			System.out.println("PlayPause");
+			
 		} else if (action.equals("Next")) {
 			if (MainActivity.mService != null) {
+				
 				System.out.println("Next");
 				MainActivity.mService.nextSong();
 				MainActivity.mService.buildNotification("play/pause");
-				remote.setImageViewResource(R.id.widget_playPause, R.drawable.pause_small);
+				String currentIcon = readPrefs(BUTTON_KEY, context);
+				if (currentIcon.equals("play")) {
+					updatePlayPause(context);
+					saveToPrefs(BUTTON_KEY, BUTTON_PAUSE, context);	
+					
+				}
 				remote.setTextViewText(R.id.widget_songLabel, MainActivity.mService.songTitles[MainActivity.mService.nowPlaying]);
 				wm.partiallyUpdateAppWidget(ids, remote);
 			}
 			
 		} else if (action.equals("Previous")) {
 			if (MainActivity.mService != null) {
-				System.out.println("Previous");
+				
 				MainActivity.mService.previousSong();
 				MainActivity.mService.buildNotification("play/pause");
-				remote.setImageViewResource(R.id.widget_playPause, R.drawable.pause_small);
+				
+				String currentIcon = readPrefs(BUTTON_KEY, context);
+				
+				if (currentIcon.equals("play")) {
+					updatePlayPause(context);
+					saveToPrefs(BUTTON_KEY, BUTTON_PAUSE, context);	
+				}
+				
 				remote.setTextViewText(R.id.widget_songLabel, MainActivity.mService.songTitles[MainActivity.mService.nowPlaying]);
 				wm.partiallyUpdateAppWidget(ids, remote);
 			}
 			
-		} else if (action.equals("android.appwidget.action.APPWIDGET_APDATE")) {
-			//this is a broadcast sent from the MusicService class, so check to make
-			//sure everything is valid, then update our widget to match MusicService notification
-			if (MainActivity.mService != null) {
-				if (MainActivity.mService.musicPlayer != null) {
-					if (MainActivity.mService.musicPlayer != null) {
-						//set our displayed song name to whatever music service is now showing
-						remote.setTextViewText(R.id.widget_songLabel, MainActivity.mService.songTitles[MainActivity.mService.nowPlaying]);
-						
-						//set image of pause/play button according to if MusicService's musicPlayer is currently playing
-						if (MainActivity.mService.musicPlayer.isPlaying()) {
-							remote.setImageViewResource(R.id.widget_playPause, R.drawable.pause_small);
-						} else {
-							remote.setImageViewResource(R.id.widget_playPause, R.drawable.play_small);
-						}
-						wm.partiallyUpdateAppWidget(ids, remote);
-					}
-				}			
-			}
-		}
+		} 
 		super.onReceive(context, intent);
 	}
 
+	public void updatePlayPause (Context context) {
+		System.out.println("Update playPause runs..............................");
+		String buttonColor = readPrefs("buttonColor", context);
+		String currentIcon = readPrefs(BUTTON_KEY, context);
+		
+		//grab our ids and widgetManager in case we need to update the widget
+		ComponentName widget = new ComponentName(context, MusicWidgetProvider.class);
+		AppWidgetManager wm = AppWidgetManager.getInstance(context);
+		int[] ids = wm.getAppWidgetIds(widget);
+		remote = new RemoteViews(context.getPackageName(), R.layout.widget_layout);
+		
+		if (currentIcon.equals(BUTTON_PLAY)) {
+			
+			int pauseBtnDrawable;
+			
+			//set our pause button according to the color the user chose
+			if (buttonColor.equals("White")) {
+				pauseBtnDrawable = R.drawable.pause_small;						
+				remote.setImageViewResource(R.id.widget_playPause, pauseBtnDrawable);						
+			} else if (buttonColor.equals("Black")) {
+				pauseBtnDrawable = R.drawable.pause_small_black;						
+				remote.setImageViewResource(R.id.widget_playPause, pauseBtnDrawable);						
+			} else if (buttonColor.equals("Yellow")) {
+				pauseBtnDrawable = R.drawable.pause_small_yellow;						
+				remote.setImageViewResource(R.id.widget_playPause, pauseBtnDrawable);						
+			} else if (buttonColor.equals("Red")) {
+				pauseBtnDrawable = R.drawable.pause_small_red;			
+				remote.setImageViewResource(R.id.widget_playPause, pauseBtnDrawable);						
+			}
+			
+		} else {
+			
+			int playBtnDrawable;
+			
+			//set our pause button according to the color the user chose
+			if (buttonColor.equals("White")) {
+				playBtnDrawable = R.drawable.play_small;						
+				remote.setImageViewResource(R.id.widget_playPause, playBtnDrawable);						
+			} else if (buttonColor.equals("Black")) {
+				playBtnDrawable = R.drawable.play_small_black;						
+				remote.setImageViewResource(R.id.widget_playPause, playBtnDrawable);						
+			} else if (buttonColor.equals("Yellow")) {
+				playBtnDrawable = R.drawable.play_small_yellow;						
+				remote.setImageViewResource(R.id.widget_playPause, playBtnDrawable);						
+			} else if (buttonColor.equals("Red")) {
+				playBtnDrawable = R.drawable.play_small_red;			
+				remote.setImageViewResource(R.id.widget_playPause, playBtnDrawable);						
+			}
+		}
+		
+		wm.partiallyUpdateAppWidget(ids, remote);
+	}
+	
 	@Override
 	public void onDeleted(Context context, int[] appWidgetIds) {
 		// TODO Auto-generated method stub

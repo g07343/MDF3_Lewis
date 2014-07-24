@@ -87,7 +87,7 @@ public class MusicService extends Service{
 		
 		
 		Intent updateWidget = new Intent(this, MusicWidgetProvider.class);
-		updateWidget.setAction("android.appwidget.action.APPWIDGET_APDATE");
+		updateWidget.setAction("android.appwidget.action.APPWIDGET_UPDATE");
 		updateWidget.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, widgetIds);
 		sendBroadcast(updateWidget);
 		
@@ -224,7 +224,7 @@ public class MusicService extends Service{
 				
 				//make sure to update our widget when a song stops playing
 				Intent updateWidget = new Intent(getApplicationContext(), MusicWidgetProvider.class);
-				updateWidget.setAction("android.appwidget.action.APPWIDGET_APDATE");
+				updateWidget.setAction("android.appwidget.action.APPWIDGET_UPDATE");
 				updateWidget.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, widgetIds);
 				sendBroadcast(updateWidget);
 			}		
