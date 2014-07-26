@@ -254,6 +254,8 @@ public class MainActivity extends Activity implements SensorEventListener {
 
 		});
 		
+		//this seems to ensure that the device launcher is sure to update it's widgets section.
+		//was having issues getting the widget to appear without a device reboot before
 		sendBroadcast(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME));
 		
 	}
@@ -545,9 +547,7 @@ public class MainActivity extends Activity implements SensorEventListener {
 
 			// mBound = true;
 		} else {
-			// this all needs to be moved once the interface has been built out,
-			// since this basically runs automatically when the app launches
-			// (BAD!)
+			//start up and bind to our service on start (no music without the service!)
 
 			// create an intent to send to the service
 			Intent startMusicService = new Intent(context,
@@ -568,7 +568,9 @@ public class MainActivity extends Activity implements SensorEventListener {
 		}
 
 	}
-
+	
+	//override the super method to (at least try) detect when the app is closed
+	//Note: this isn't guaranteed to get called and only happens maybe 1 in 4 times
 	@Override
 	protected void onDestroy() {
 		System.out.println("MainActivity Destroyed!");
@@ -593,6 +595,7 @@ public class MainActivity extends Activity implements SensorEventListener {
 		super.onDestroy();
 	}
 
+	//app has left the foreground, go ahead an get rid of receiver and update widget
 	@Override
 	protected void onPause() {
 		if (mBound) {
@@ -612,6 +615,7 @@ public class MainActivity extends Activity implements SensorEventListener {
 		super.onPause();
 	}
 
+	//app is back, re-register receiver and update our interface to match MusicService
 	@Override
 	protected void onResume() {
 		isActive = true;

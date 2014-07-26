@@ -129,6 +129,7 @@ public class WidgetConfigActivity  extends Activity {
 			}			
 		});
 		
+		//set up listener for the button coloring radio group
 		buttonGroup.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 
 			@Override
@@ -154,6 +155,7 @@ public class WidgetConfigActivity  extends Activity {
 			
 		});
 		
+		//set up listener for the tint coloring radio group
 		tintGroup.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 
 			@Override
@@ -340,6 +342,7 @@ public class WidgetConfigActivity  extends Activity {
 			return true;
 		}
 		
+		//Override super method so we can detect the 'fling' motion gesture
 		@Override
 		public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
 			
@@ -352,9 +355,14 @@ public class WidgetConfigActivity  extends Activity {
                     if (currentScreen > 2) {
                     	currentScreen = 2;
                     } else {
+                    	//set the correct animations for this direction
                     	viewAnimator.setInAnimation(slide_in_right);
                     	viewAnimator.setOutAnimation(slide_out_left);
-                    	viewAnimator.showNext();;
+                    	
+                    	//show next page from child viewAnimator's child array
+                    	viewAnimator.showNext();
+                    	
+                    	//update the page icon to reflect the correct page
                     	updatePageIcon();
                     }
                 }  else if (e2.getX() - e1.getX() > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
@@ -362,10 +370,14 @@ public class WidgetConfigActivity  extends Activity {
                 	if (currentScreen < 0) {
                 		currentScreen = 0;
                 	} else {
-                		//viewAnimator.setDisplayedChild(currentScreen);
+                		//set correct animations for moving to previous view
                 		viewAnimator.setInAnimation(slide_in_left);
                     	viewAnimator.setOutAnimation(slide_out_right);
+                    	
+                    	//show viewAnimators previous view
                 		viewAnimator.showPrevious();
+                		
+                		//update the page icon to match
                 		updatePageIcon();
                 	}               	
                 }
@@ -377,6 +389,7 @@ public class WidgetConfigActivity  extends Activity {
 		}
 	}
 	
+	//this method ensures our page icons match whatever page the user is currently viewing
 	public void updatePageIcon () {
 		if (currentScreen == 0) {
 			pageIcons.setImageDrawable(getResources().getDrawable(R.drawable.page1));

@@ -50,6 +50,8 @@ public class MusicWidgetProvider extends AppWidgetProvider {
 		System.out.println("onUpdate runs from provider");
 		// TODO Auto-generated method stub
 		
+		//check to see if we have a saved state for our play/pause button
+		//If not, set one
 		String defaultState = readPrefs(BUTTON_KEY, context);
 		if (defaultState == null) {
 			//write a default state for our play/pause button to shared prefs, since data is not retained between updates
@@ -77,6 +79,7 @@ public class MusicWidgetProvider extends AppWidgetProvider {
 		remote.setOnClickPendingIntent(R.id.widget_next, nextPending);
 		remote.setOnClickPendingIntent(R.id.widget_previous, previousPending);
 		
+		//if MainActivity's instance of MusicService is not null...
 		if (MainActivity.mService != null) {
 			
 			//set our song counter to match MusicService
@@ -148,6 +151,7 @@ public class MusicWidgetProvider extends AppWidgetProvider {
 		super.onUpdate(context, appWidgetManager, appWidgetIds);
 	}
 
+	//this method receives broadcasts concerning the widgets
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		
@@ -176,6 +180,7 @@ public class MusicWidgetProvider extends AppWidgetProvider {
 				SharedPreferences prefs = context.getSharedPreferences("com.matthewlewis.shakit", Context.MODE_PRIVATE);
 		        
 				try {
+					//attempt to deserialize our song data from shared prefs
 					int numSongs = prefs.getInt("numSongs", 0);
 					songLocations = (String[]) ObjectSerializer.deserialize(prefs.getString("songPaths", ObjectSerializer.serialize(new String[numSongs])));
 					songNames = (String[]) ObjectSerializer.deserialize(prefs.getString("songTitles", ObjectSerializer.serialize(new String[numSongs])));
@@ -186,9 +191,7 @@ public class MusicWidgetProvider extends AppWidgetProvider {
 			}
 			
 		} else if (action.equals("PlayPause")) {
-			
-			
-			
+					
 			//grab a boolean, which tells us if MainActivity currently has a reference to MusicService
 			boolean serviceExists;
 			if (MainActivity.mService != null) {
@@ -236,8 +239,7 @@ public class MusicWidgetProvider extends AppWidgetProvider {
 					updatePlayPause(context);
 					//ensure that our service actually exists before trying to make calls to it			
 					if (serviceExists == true) {
-						
-						
+											
 						//stop music playback
 						MainActivity.mService.stopMusic();
 						MainActivity.mService.buildNotification("play/pause");
@@ -250,12 +252,12 @@ public class MusicWidgetProvider extends AppWidgetProvider {
 					
 				}
 			}
-				
-			
+			//update whatever was changed		
 			wm.partiallyUpdateAppWidget(ids, remote);
 			
 			System.out.println("PlayPause");
 			
+			//user tapped the next button
 		} else if (action.equals("Next")) {
 			if (MainActivity.mService != null) {
 				
@@ -265,10 +267,11 @@ public class MusicWidgetProvider extends AppWidgetProvider {
 				String currentIcon = readPrefs(BUTTON_KEY, context);
 				if (currentIcon.equals("play")) {
 					updatePlayPause(context);
-					saveToPrefs(BUTTON_KEY, BUTTON_PAUSE, context);	
-					
+					//make sure to save to prefs that the playPause button is now 'pause'
+					saveToPrefs(BUTTON_KEY, BUTTON_PAUSE, context);						
 				}
 				
+				//update the widget's counter to display correct values
 				int currentSont = MainActivity.mService.nowPlaying +1;
 				int totalSongs = MainActivity.songTitles.length;
 				String finalCount = Integer.toString(currentSont) + " / " + Integer.toString(totalSongs);
@@ -302,6 +305,7 @@ public class MusicWidgetProvider extends AppWidgetProvider {
 		super.onReceive(context, intent);
 	}
 
+	//we use this method to update the widget's pause/play button according to what's saved to shared prefs
 	public void updatePlayPause (Context context) {
 		System.out.println("Update playPause runs..............................");
 		String buttonColor = readPrefs("buttonColor", context);
