@@ -49,7 +49,6 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.RemoteViews;
 import android.widget.TextView;
 
 public class MainActivity extends Activity implements SensorEventListener {
@@ -80,7 +79,7 @@ public class MainActivity extends Activity implements SensorEventListener {
 	ImageButton playPause;
 	ImageButton next;
 	ImageButton previous;
-	int playingInt;
+	static int playingInt;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -437,7 +436,10 @@ public class MainActivity extends Activity implements SensorEventListener {
 				if (mBound && mService != null) {
 					mService.stopMusic();
 					mService.buildNotification("play/pause");
-
+					
+					//update our widget to match current state
+					updateWidget();
+					
 					// need to grab our icon to ensure we toggle this only when
 					// our button displayed
 					// is the "pause" version and not play
@@ -606,7 +608,7 @@ public class MainActivity extends Activity implements SensorEventListener {
 				e.printStackTrace();
 			}
 		}
-
+		updateWidget();
 		super.onPause();
 	}
 
@@ -633,6 +635,7 @@ public class MainActivity extends Activity implements SensorEventListener {
 			}
 		}
 		System.out.println("ONRESUME RUNS");
+		updateWidget();
 		super.onResume();
 	}
 
@@ -735,7 +738,7 @@ public class MainActivity extends Activity implements SensorEventListener {
 				
 				
 		Intent updateWidget = new Intent(context, MusicWidgetProvider.class);
-		updateWidget.setAction("android.appwidget.action.APPWIDGET_APDATE");
+		updateWidget.setAction("android.appwidget.action.APPWIDGET_UPDATE");
 		updateWidget.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, widgetIds);
 		sendBroadcast(updateWidget);
 	}

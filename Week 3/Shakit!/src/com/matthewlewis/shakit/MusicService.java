@@ -155,6 +155,7 @@ public class MusicService extends Service{
 		} else  {
 			playSong(nextSong);
 		}
+		nowPlaying = nextSong;
 	}
 
 	//this function goes to the previous song in our array after checking to make sure we
@@ -171,6 +172,7 @@ public class MusicService extends Service{
 		} else {
 			playSong(prevSong);
 		}
+		nowPlaying = prevSong;
 	}
 	
 	//this function recreates our array if it was destroyed somehow

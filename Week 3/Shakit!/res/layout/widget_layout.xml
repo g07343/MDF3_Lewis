@@ -11,24 +11,36 @@
         android:layout_marginTop="22dp"
         android:background="#50000000"
         android:orientation="vertical"
-        android:paddingBottom="14dp"
-        android:paddingTop="14dp" >
+        android:paddingBottom="4dp"
+        android:paddingTop="13dp" >
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="-10dp"
                 android:orientation="horizontal" >
 
                 <TextView
                     android:id="@id/widget_songLabel"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:gravity="center"
+                    android:layout_marginLeft="80dp"
+                    android:duplicateParentState="true"
+                    android:ellipsize="marquee"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:marqueeRepeatLimit="marquee_forever"
+                    android:paddingTop="10dp"
+                    android:scrollHorizontally="true"
+                    android:singleLine="true"
                     android:text="@string/widget_songLabel"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="#FFF" />
-
+                    android:textColor="#FFF" >
+                    
+                    <requestFocus android:focusable="true" android:focusableInTouchMode="true"
+        				android:duplicateParentState="true" />
+                    
+				</TextView>
             </LinearLayout>
 
             <LinearLayout
@@ -40,7 +52,9 @@
                     android:id="@id/widget_previous"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
+                    android:layout_marginLeft="15dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_weight="2"
                     android:adjustViewBounds="true"
                     android:contentDescription="@string/widget_back_desc"
                     android:maxHeight="25dp"
@@ -48,12 +62,23 @@
                     android:paddingLeft="10dp"
                     android:scaleType="fitCenter"
                     android:src="@drawable/back_small" />
+
+                <TextView
+                    android:id="@id/widget_songCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="15dp"
+                    android:layout_weight="0.99"
+                    android:gravity="center"
+                    android:text="@string/widget_songCountLabel"
+                    android:textColor="#FFFFFF" />
                 
                 <ImageView
                     android:id="@id/widget_next"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
+                    android:layout_marginTop="10dp"
+                    android:layout_weight="2"
                     android:adjustViewBounds="true"
                     android:contentDescription="@string/widget_next_desc"
                     android:maxHeight="25dp"

@@ -23,16 +23,6 @@
             </intent-filter>
         </activity>
         <service android:name="MusicService"></service>
-        <receiver android:name="PauseReceiver" >
-            <intent-filter>
-                <action android:name="com.matthewlewis.shakit.MusicService.PauseReceiver"/>
-            </intent-filter>
-        </receiver>
-        <receiver android:name="NotificationReceiver" >
-            <intent-filter>
-                <action android:name="com.matthewlewis.shakit.MainActivity.NotificationReceiver"/>
-            </intent-filter>
-        </receiver>
         <activity
             android:name=".WidgetConfigActivity"
             android:label="Configure Shakit Widget">

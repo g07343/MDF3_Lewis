@@ -34,4 +34,5 @@
     <item type="id" name="widgetConfig_tintRed" />
     <item type="id" name="widgetConfig_tintBlue" />
     <item type="id" name="widgetConfig_button" />
+    <item type="id" name="widget_songCount" />
 </resources>

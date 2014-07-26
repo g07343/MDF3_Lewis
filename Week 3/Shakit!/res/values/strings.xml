@@ -33,4 +33,5 @@
 	<string name="widgetConfig_whiteColor">White</string>
 	<string name="widgetConfig_pageIndicatorDesc">Page Indicator</string>
 	<string name="widgetConfig_buttonLabel">Create!</string>
+	<string name="widget_songCountLabel">0/0</string>
 </resources>

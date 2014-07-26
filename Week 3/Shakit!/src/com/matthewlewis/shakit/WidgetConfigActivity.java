@@ -299,6 +299,16 @@ public class WidgetConfigActivity  extends Activity {
 					remote.setOnClickPendingIntent(R.id.widget_previous, previousPending);
 					remote.setOnClickPendingIntent(R.id.widget_songLabel, goToActivity);
 					
+					//attempt to set the songCounter intial values here
+					if (MainActivity.mService != null) {
+						
+						//set our song counter to match MusicService
+						int currentSont = MainActivity.mService.nowPlaying +1;
+						int totalSongs = MainActivity.songTitles.length;
+						String finalCount = Integer.toString(currentSont) + " / " + Integer.toString(totalSongs);
+						remote.setTextViewText(R.id.widget_songCount, finalCount);						
+					}
+					
 					//tell widgetManager to update our widget
 					AppWidgetManager.getInstance(getApplicationContext()).updateAppWidget(widgetId, remote);
 					
