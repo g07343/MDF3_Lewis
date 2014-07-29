@@ -10,6 +10,7 @@ import android.view.MenuItem;
 import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
+import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
@@ -38,6 +39,8 @@ public class MainActivity extends Activity {
         
         //enable javascript for the webview
         webSettings.setJavaScriptEnabled(true);
+        
+        searchView.setWebChromeClient(new WebChromeClient());
         
         //load the local web page from assets
         searchView.loadUrl("file:///android_asset/search.html");
