@@ -21,8 +21,9 @@ h2 {
 	display: block;
 }
 
-#gameSearch {
+.searchField {
 	margin-top: 50px;
+	margin-left: 100px;
 	background-color: rgba(219, 219, 219, 1);
 }
 
@@ -30,4 +31,8 @@ h2 {
 	background-color: rgba(234, 110, 35, 1);
 	color: #FFF;
 	margin-top: 50px;
+}
+
+.ui-input-text {
+	margin-top: 80px;
 }

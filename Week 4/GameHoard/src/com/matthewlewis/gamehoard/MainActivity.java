@@ -1,3 +1,16 @@
+/*
+ * Author Matthew Lewis
+ * 
+ * Project GameHoard
+ * 
+ * Package com.matthewlewis.gamehoard
+ * 
+ * File MainActivity.java
+ * 
+ * Purpose MainActivity contains both the native UI ("preview" webviews) and the main WebView responsible for containing
+ * the HTML interface.
+ * 
+ */
 package com.matthewlewis.gamehoard;
 
 import android.annotation.SuppressLint;
@@ -13,11 +26,17 @@ import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 
 public class MainActivity extends Activity {
 
 	WebView searchView;
+	WebView preview1;
+	WebView preview2;
+	WebView preview3;
+	WebView preview4;
+	String enteredUrl;
 	
     @SuppressLint("SetJavaScriptEnabled") @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,8 +50,30 @@ public class MainActivity extends Activity {
         
         setContentView(R.layout.activity_main);
         
-        //grab a reference to our webview used for searching
+        //grab a reference to our webviews 
         searchView = (WebView) findViewById(R.id.searchWebView);
+        preview1 = (WebView) findViewById(R.id.webPreview_1);
+        preview2 = (WebView) findViewById(R.id.webPreview_2);
+        preview3 = (WebView) findViewById(R.id.webPreview_3);
+        preview4 = (WebView) findViewById(R.id.webPreview_4);
+        
+        //create default zoom/viewport settings for each of our preview webViews (reeeeaaaalllllyyyy small!)
+        preview1.getSettings().setLoadWithOverviewMode(true);
+        preview1.getSettings().setUseWideViewPort(true);
+        preview1.setInitialScale(1);
+        
+        preview2.getSettings().setLoadWithOverviewMode(true);
+        preview2.getSettings().setUseWideViewPort(true);
+        preview2.setInitialScale(1);
+        
+        preview3.getSettings().setLoadWithOverviewMode(true);
+        preview3.getSettings().setUseWideViewPort(true);
+        preview3.setInitialScale(1);
+        
+        preview4.getSettings().setLoadWithOverviewMode(true);
+        preview4.getSettings().setUseWideViewPort(true);
+        preview4.setInitialScale(1);
+        
         
         //grab the webview's settings
         WebSettings webSettings = searchView.getSettings();
@@ -79,8 +120,87 @@ public class MainActivity extends Activity {
     	
     	@JavascriptInterface
     	public void logString(String string) {
-    		System.out.println("User wants to search:  " + string);
+    		System.out.println("JAVASCRIPT_LOG:  " + string);
     	}
     	
+    	//if the entered url is valid, this function will update the "preview" tile that displays a tiny
+    	//thumbnail for the user to see and launch the intent to the website
+    	@JavascriptInterface
+    	public void showPreview(final String url, int previewPane) {
+    		
+    		//determine which preview pane to update according to the passed int
+    		switch(previewPane) {
+    		case 1:
+    			
+    			//create a runnable since this was called on the "JavaBridge" thread
+    			preview1.post(new Runnable() {
+					@Override
+					public void run() {						
+						//set our custom WebViewClient class to this particular webView
+						preview1.setWebViewClient(new MyWebViewClient());
+						preview1.loadUrl(url);
+					}   				
+    			});
+    			
+    			break;
+    			
+    		case 2:
+    			
+    			preview2.post(new Runnable() {
+					@Override
+					public void run() {						
+						//set our custom WebViewClient class to this particular webView
+						preview2.setWebViewClient(new MyWebViewClient());
+						preview2.loadUrl(url);
+					}   				
+    			});
+    			
+    			break;
+    			
+    		case 3:
+    			
+    			preview3.post(new Runnable() {
+					@Override
+					public void run() {						
+						//set our custom WebViewClient class to this particular webView
+						preview3.setWebViewClient(new MyWebViewClient());
+						preview3.loadUrl(url);
+					}   				
+    			});
+    			
+    			break;
+    			
+    		case 4:
+    			
+    			preview4.post(new Runnable() {
+					@Override
+					public void run() {						
+						//set our custom WebViewClient class to this particular webView
+						preview4.setWebViewClient(new MyWebViewClient());
+						preview4.loadUrl(url);
+					}   				
+    			});
+    			
+    			break;
+    		}
+    	}   
+    	
+    	private class MyWebViewClient extends WebViewClient {
+    		@Override
+    		public boolean shouldOverrideUrlLoading(WebView view, String url) {
+    			System.out.println("Internal urlString is: " + url + "  and global string is:  " + enteredUrl);
+    			return false;
+//    			if (url.equals(enteredUrl)) {
+//    				//view.loadUrl(url);
+//    				System.out.println("URL should have loaded!");
+//    				
+//    			}
+//    			
+//    			//not the entered url from the activity so let it be an intent
+//    			Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+//    			startActivity(intent);
+//    			return true;
+    		}
+    	}
     }
 }

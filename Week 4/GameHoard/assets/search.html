@@ -1,22 +1,33 @@
 <!doctype html>
 <html>
-	<head>
+	<head>		
+		
 		<link rel="stylesheet" href="jquery.mobile-1.4.3.css"/>
 		<link rel="stylesheet" href="app.css"/>
 	</head>
 	<body>
-		<img id="bg" src="bg montage.png" />
+		<img id="bg" src="search_bg.png" />
 		<div>
 			<form id="searchForm">
-     			<label for="gameSearch"><h2>Search video games by name:</h2></label>
-     			<div id="gameSearch" class="ui-input-text ui-body-inherit ui-corner-all ui-shad-inset">
-     				<input type="search" id="searchField" name="gameSearch">
+     			<label for="gameSearch"><h2>Add your favorite websites:</h2></label>
+     			<div id="website1" class="ui-input-text ui-body-inherit ui-corner-all ui-shad-inset searchField">
+     				<input type="url" id="searchField1" name="url1" data-mini="true" placeholder="' http:// ' required">
      			</div>
-     			<div class="ui-input-btn ui-btn ui-corner-all ui-shadow">Find it!
+     			<div id="website2" class="ui-input-text ui-body-inherit ui-corner-all ui-shad-inset searchField">
+     				<input type="url" id="searchField2" name="url2" data-mini="true" placeholder="' http:// ' required">
+     			</div>
+     			<div id="website3" class="ui-input-text ui-body-inherit ui-corner-all ui-shad-inset searchField">
+     				<input type="url" id="searchField3" name="url3" data-mini="true" placeholder="' http:// ' required">
+     			</div>
+     			<div id="website4" class="ui-input-text ui-body-inherit ui-corner-all ui-shad-inset searchField">
+     				<input type="url" id="searchField4" name="url4" data-mini="true" placeholder="' http:// ' required">
+     			</div>
+     			<div class="ui-input-btn ui-btn ui-corner-all ui-shadow">Save to Device!
         			<input id="searchBtn" type="button" onClick="sendString()" data-enhanced="true" value="Input value">
     			</div>
 			</form>
 		</div>
+		<script src="jquery.js"></script>
 		<script src="search.js"></script>
 	</body>
 </html

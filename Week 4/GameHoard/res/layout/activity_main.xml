@@ -1,12 +1,51 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.matthewlewis.gamehoard.MainActivity" >
-
+    	
+    <LinearLayout
+        android:layout_width= "match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+    
     <WebView
         android:id="@id/searchWebView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
+    
+    </LinearLayout>
 
-</LinearLayout>
+    <WebView
+        android:id="@id/webPreview_1"
+        android:layout_width="75dp"
+        android:layout_height="100dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="95dp"
+        android:background="@drawable/empty_bg" />
+    
+    <WebView
+        android:id="@id/webPreview_2"
+        android:layout_width="75dp"
+        android:layout_height="100dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="215dp"
+        android:background="@drawable/empty_bg" />
+    
+    <WebView
+        android:id="@id/webPreview_3"
+        android:layout_width="75dp"
+        android:layout_height="100dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="335dp"
+        android:background="@drawable/empty_bg" />
+    
+    <WebView
+        android:id="@id/webPreview_4"
+        android:layout_width="75dp"
+        android:layout_height="100dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginTop="455dp"
+        android:background="@drawable/empty_bg" />
+    
+</RelativeLayout>
