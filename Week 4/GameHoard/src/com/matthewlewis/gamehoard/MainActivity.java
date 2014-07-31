@@ -16,12 +16,16 @@ package com.matthewlewis.gamehoard;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.pm.ActivityInfo;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
@@ -29,6 +33,7 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Toast;
 
 
 public class MainActivity extends Activity {
@@ -42,7 +47,7 @@ public class MainActivity extends Activity {
 	String[] saved = new String[4];
 	
 	
-    @SuppressLint("SetJavaScriptEnabled") @Override
+    @SuppressLint({ "SetJavaScriptEnabled", "ClickableViewAccessibility" }) @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
@@ -61,6 +66,43 @@ public class MainActivity extends Activity {
         preview3 = (WebView) findViewById(R.id.webPreview_3);
         preview4 = (WebView) findViewById(R.id.webPreview_4);
         
+        //set all of our preview webViews to not be clickable
+        preview1.setOnTouchListener(new View.OnTouchListener() {
+			
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				// TODO Auto-generated method stub
+				return true;
+			}
+		});
+
+		preview2.setOnTouchListener(new View.OnTouchListener() {
+
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				// TODO Auto-generated method stub
+				return true;
+			}
+		});
+        
+		preview3.setOnTouchListener(new View.OnTouchListener() {
+
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				// TODO Auto-generated method stub
+				return true;
+			}
+		});
+        
+		preview4.setOnTouchListener(new View.OnTouchListener() {
+
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				// TODO Auto-generated method stub
+				return true;
+			}
+		});
+        
         //create default zoom/viewport settings for each of our preview webViews (reeeeaaaalllllyyyy small!)
         preview1.getSettings().setLoadWithOverviewMode(true);
         preview1.getSettings().setUseWideViewPort(true);
@@ -78,7 +120,15 @@ public class MainActivity extends Activity {
         preview4.getSettings().setUseWideViewPort(true);
         preview4.setInitialScale(1);
         
+        //by default, hide all of the preview webviews, which if enabled, will show themselves later
+        preview1.setVisibility(View.GONE);
+        preview2.setVisibility(View.GONE);
+        preview3.setVisibility(View.GONE);
+        preview4.setVisibility(View.GONE);
         
+        //preview1.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        preview1.setWebChromeClient(new WebChromeClient());
+        preview1.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
         //grab the webview's settings
         WebSettings webSettings = searchView.getSettings();
         
@@ -201,27 +251,12 @@ public class MainActivity extends Activity {
     			Editor editor = prefs.edit();
     			System.out.println("Key to be saved is:  " + convertedSync + "  and value is:  " + array[i]);
     			editor.putString(convertedSync, array[i]).apply();
-    		}
-    		
-    	}
-    	
-    	//this method is called by Javascipt as soon as the interface is being loaded and passes back any saved websites
-    	@JavascriptInterface
-    	public String[] checkSaved() {  		
-    		
-    		for (int i = 0; i < saved.length; i++) {
-    			Integer sync = i +1;
-    			String convertedSync = sync.toString();
-    			SharedPreferences prefs = _context.getSharedPreferences("com.matthewlewis.gamehoard", MODE_PRIVATE);
     			
-    			if (prefs.contains(convertedSync)) {
-    				saved[i] = prefs.getString(convertedSync, null);
-    			} else {
-    				saved[i] = "null";
-    			}
+    			//display confirmation that favorites were saved
+    			Toast.makeText(_context, "Favorites saved!", Toast.LENGTH_LONG).show();
+    			
     		}
-    		System.out.println("SAVED WAS:  " + saved);
-    		return saved;
+    		
     	}
     	
     	//this method grabs individual saved url strings one by one, accepting a string as the key
@@ -236,6 +271,83 @@ public class MainActivity extends Activity {
     		} else {
     			return "null";
     		}
+    	}
+    	
+    	//this method toggles the visibility of the 'preview' webviews
+    	@JavascriptInterface
+    	public void togglePreview(String previewNum, final String intention) {
+    		WebView local = null;
+    		
+    		if (previewNum.equals("1")) {
+    			local = preview1;
+    		} else if (previewNum.equals("2")) {
+    			local = preview2;
+    		} else if (previewNum.equals("3")) {
+    			local = preview3;
+    		} else {
+    			local = preview4;
+    		}
+    		
+    		System.out.println("~~~~~~~~~Intention was:  " + intention + "  and number was:  " + previewNum + "~~~~~~~~~~~");
+    		
+    		//whatever the local webview was set to, convert to a finalized form and use a runnable to toggle it's visibility
+    		final WebView finalizedLocal = local;
+    		
+    		//create a different runnable depending on the 'intention' string passed
+    		//need to create two separate ones because checking the 'intention' never allows the else statement to run for some reason
+    		if (intention.equals("VISIBLE")) {
+    			finalizedLocal.post(new RunningTask() {
+    				private volatile boolean isRunning = true;
+    				
+    				@Override
+    				public void run() {
+    					Thread thisThread = Thread.currentThread();
+    					while (isRunning) {
+    						// set the view to visible
+        					finalizedLocal.setVisibility(View.VISIBLE);
+        					this.kill(); 	
+    					} 
+    					thisThread.interrupt();
+    				}   
+    				
+    				@Override
+    				public void kill() {
+    					isRunning = false;
+    					System.out.println("***VISIBILITY THREAD KILLED***");
+    					
+    				}
+    				
+        		});
+    		} else {
+    			finalizedLocal.post(new RunningTask() {
+    				private volatile boolean isRunning = true;
+					@Override
+					public void run() {
+						Thread thisThread = Thread.currentThread();
+						while (isRunning) {
+							// set view to invisibile
+							finalizedLocal.setVisibility(View.GONE);
+							this.kill();
+						}  
+						thisThread.interrupt();										
+					}
+					
+					@Override
+					public void kill() {
+						isRunning = false;
+						System.out.println("***INVISIBLE THREAD KILLED***");
+					}
+    			});
+    		}   		
+    	}
+    	
+    	//this method is called from javascript when the user taps an invisible overlay sitting over
+    	//the 'preview' panes
+    	@JavascriptInterface
+    	public void launchIntent(String url) {
+    		Intent webIntent = new Intent(Intent.ACTION_VIEW);
+    		webIntent.setData(Uri.parse(url));
+    		startActivity(webIntent);
     	}
     	
     	private class MyWebViewClient extends WebViewClient {
