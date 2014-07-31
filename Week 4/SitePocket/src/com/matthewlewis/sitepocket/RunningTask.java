@@ -7,11 +7,11 @@
  * 
  * File RunningTask.java
  * 
- * Purpose This is an extended version of the Runnable class that allows us to manually kill the thread, since we are basically using
- * it to control the visibility of the webview 'preview' objects, and not anything too intense.
+ * Purpose This is an extended version of the Runnable class that allows us to manually "kill" the thread, since we are basically using
+ * it to control the visibility of the webview 'preview' objects, and not anything too intense or long running.
  * 
  */
-package com.matthewlewis.gamehoard;
+package com.matthewlewis.sitepocket;
 
 public class RunningTask implements Runnable{
 	

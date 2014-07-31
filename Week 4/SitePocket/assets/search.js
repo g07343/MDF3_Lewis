@@ -1,3 +1,11 @@
+/*
+Author Matthew Lewis
+
+Project SitePocket
+
+Purpose Search.js provides the javascript logic for user interaction within the web (html) portion of the interface
+
+*/
 
 //create an array to hold the values
 var urls = [null, null, null, null];
@@ -87,7 +95,8 @@ function checkUrl (url , int) {
       //update the correct preview pane
       Native.showPreview(url, int);
 
-  		//depending on the int passed, set to particular index in our array and ensure the correct one is made visible
+  		//depending on the int passed, set to particular index in our array and ensure the correct one is made visible,
+  		//and set the corresponding placeholder image to not be visible
   		if (int == 1) {
   			urls[0] = url;
   			Native.togglePreview("1", "VISIBLE");
@@ -107,7 +116,8 @@ function checkUrl (url , int) {
   		}
 	} else {
   		Native.logString("NOT A VALID URL!");
-  		//since url is invalid, ensure that the corresponding variable is set to null
+  		//since url is invalid, ensure that the corresponding variable is set to null, and toggle visibility of 
+  		//preview webviews and placeholder images
   		if (int == 1) {
   			urls[0] = null;
   			Native.togglePreview("1", "NULL");
@@ -128,10 +138,10 @@ function checkUrl (url , int) {
 	}
 }
 
+//this function simply passes our data to native code to save out to the device
 function saveInput () {
 	Native.saveToDevice(urls);
 
-	Native.logString(urls.toString());
 }
 
 //grab any saved data from Native one by once since getting an array back is apparently very difficult

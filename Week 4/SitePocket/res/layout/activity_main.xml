@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:focusable="true"
     android:focusableInTouchMode="true"
-    tools:context="com.matthewlewis.gamehoard.MainActivity" >
+    tools:context="com.matthewlewis.sitepocket.MainActivity" >
     	
     <LinearLayout
         android:layout_width= "match_parent"

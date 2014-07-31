@@ -1,9 +1,9 @@
 /*
  * Author Matthew Lewis
  * 
- * Project GameHoard
+ * Project SitePocket
  * 
- * Package com.matthewlewis.gamehoard
+ * Package com.matthewlewis.sitepocket
  * 
  * File MainActivity.java
  * 
@@ -11,7 +11,7 @@
  * the HTML interface.
  * 
  */
-package com.matthewlewis.gamehoard;
+package com.matthewlewis.sitepocket;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -165,6 +165,7 @@ public class MainActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
     
+    //create an interface to link our native code to our Javascript
     public class SearchInterface {
     	
     	Context _context;
@@ -173,6 +174,7 @@ public class MainActivity extends Activity {
     		_context = context;
     	}
     	
+    	//this is for javascript debugging
     	@JavascriptInterface
     	public void logString(String string) {
     		System.out.println("JAVASCRIPT_LOG:  " + string);
@@ -287,8 +289,8 @@ public class MainActivity extends Activity {
     		} else {
     			local = preview4;
     		}
-    		
-    		System.out.println("~~~~~~~~~Intention was:  " + intention + "  and number was:  " + previewNum + "~~~~~~~~~~~");
+    		//since chromium makes 10 billion console logs every minute, create an over the top comment out to check info
+    		System.out.println("::::Intention was:  " + intention + "  and number was:  " + previewNum + ":::::");
     		
     		//whatever the local webview was set to, convert to a finalized form and use a runnable to toggle it's visibility
     		final WebView finalizedLocal = local;
@@ -305,11 +307,15 @@ public class MainActivity extends Activity {
     					while (isRunning) {
     						// set the view to visible
         					finalizedLocal.setVisibility(View.VISIBLE);
+        					
+        					//manually attempt to "kill" the thread so it doesn't run forever
         					this.kill(); 	
     					} 
     					thisThread.interrupt();
     				}   
     				
+    				//this doesn't actually kill the thread, it just sets our boolean to false, ending the 
+    				//thread's 'run cycle'
     				@Override
     				public void kill() {
     					isRunning = false;
@@ -350,6 +356,8 @@ public class MainActivity extends Activity {
     		startActivity(webIntent);
     	}
     	
+    	//Override default WebViewClient so that we can ensure intents created when the user enters a url,
+    	//are sent to the corresponding 'preview' webview and not to the system
     	private class MyWebViewClient extends WebViewClient {
     		@Override
     		public boolean shouldOverrideUrlLoading(WebView view, String url) {
