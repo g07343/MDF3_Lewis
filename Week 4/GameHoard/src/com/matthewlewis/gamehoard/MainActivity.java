@@ -16,6 +16,8 @@ package com.matthewlewis.gamehoard;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.view.Menu;
@@ -37,6 +39,8 @@ public class MainActivity extends Activity {
 	WebView preview3;
 	WebView preview4;
 	String enteredUrl;
+	String[] saved = new String[4];
+	
 	
     @SuppressLint("SetJavaScriptEnabled") @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,6 +92,7 @@ public class MainActivity extends Activity {
         
         //set our javascript interface for the search webview to the below "SearchInterface" class
         searchView.addJavascriptInterface(new SearchInterface(this), "Native");
+        
     }
 
 
@@ -185,21 +190,61 @@ public class MainActivity extends Activity {
     		}
     	}   
     	
+    	//this is the native method that is called when the user chooses to save the websites
+    	@JavascriptInterface
+    	public void saveToDevice(String[] array) {
+    		for (int i = 0; i < array.length; i++) {
+    			SharedPreferences prefs = _context.getSharedPreferences("com.matthewlewis.gamehoard", MODE_PRIVATE);
+    			Integer sync = i + 1;
+    			String convertedSync = sync.toString();
+    			
+    			Editor editor = prefs.edit();
+    			System.out.println("Key to be saved is:  " + convertedSync + "  and value is:  " + array[i]);
+    			editor.putString(convertedSync, array[i]).apply();
+    		}
+    		
+    	}
+    	
+    	//this method is called by Javascipt as soon as the interface is being loaded and passes back any saved websites
+    	@JavascriptInterface
+    	public String[] checkSaved() {  		
+    		
+    		for (int i = 0; i < saved.length; i++) {
+    			Integer sync = i +1;
+    			String convertedSync = sync.toString();
+    			SharedPreferences prefs = _context.getSharedPreferences("com.matthewlewis.gamehoard", MODE_PRIVATE);
+    			
+    			if (prefs.contains(convertedSync)) {
+    				saved[i] = prefs.getString(convertedSync, null);
+    			} else {
+    				saved[i] = "null";
+    			}
+    		}
+    		System.out.println("SAVED WAS:  " + saved);
+    		return saved;
+    	}
+    	
+    	//this method grabs individual saved url strings one by one, accepting a string as the key
+    	//since trying to pass anything but strings between javascript and java is a nightmare
+    	@JavascriptInterface
+    	public String returnSaved (String idString) {
+    		SharedPreferences prefs = _context.getSharedPreferences("com.matthewlewis.gamehoard", MODE_PRIVATE);
+    		
+    		if (prefs.contains(idString)) {
+    			String saved = prefs.getString(idString, "null");
+    			return saved;
+    		} else {
+    			return "null";
+    		}
+    	}
+    	
     	private class MyWebViewClient extends WebViewClient {
     		@Override
     		public boolean shouldOverrideUrlLoading(WebView view, String url) {
     			System.out.println("Internal urlString is: " + url + "  and global string is:  " + enteredUrl);
+    			
+    			//return false so Android doesn't create an intent
     			return false;
-//    			if (url.equals(enteredUrl)) {
-//    				//view.loadUrl(url);
-//    				System.out.println("URL should have loaded!");
-//    				
-//    			}
-//    			
-//    			//not the entered url from the activity so let it be an intent
-//    			Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-//    			startActivity(intent);
-//    			return true;
     		}
     	}
     }
